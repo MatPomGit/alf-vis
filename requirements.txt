@@ -1,5 +1,10 @@
 # Podstawowe zależności projektu
 # Zainstaluj środowisko deweloperskie: pip install -e ".[dev]"
+# Pełna instalacja (wszystkie funkcje): pip install -e ".[all,dev]"
+# Opcjonalne grupy:
+#   markers  – AprilTag, QR code: pip install -e ".[markers]"
+#   yolo     – YOLO object detection: pip install -e ".[yolo]"
+#   3d       – Open3D point clouds, SLAM: pip install -e ".[3d]"
 
 numpy>=1.26
 opencv-python-headless>=4.9
