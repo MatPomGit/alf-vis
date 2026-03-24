@@ -19,7 +19,7 @@ Implementation notes:
     - NumPy vectorised back-projection for performance.
     - Optional Open3D integration for visualisation and I/O.
     - Point cloud saved to PLY (ASCII or binary) via Open3D or
-      ``struct`` serialisation without extra dependencies.
+    ``struct`` serialisation without extra dependencies.
 """
 
 from __future__ import annotations

@@ -20,7 +20,7 @@ Implementation notes:
     - ``cv2.calibrateCamera`` for intrinsics + distortion.
     - ``cv2.stereoCalibrate`` for stereo rigs (not yet implemented - see TODO).
     - Aim for RMS reprojection error < 0.5 px; > 1.0 px usually means
-      poor image quality or too few views.
+        poor image quality or too few views.
     - Calibration files are stored as YAML using ``cv2.FileStorage``.
 """
 
