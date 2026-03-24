@@ -24,6 +24,27 @@ dev = [
     "mypy>=1.10",
     "pre-commit>=3.7",
 ]
+# Visual marker detection (ArUco is bundled with opencv-contrib-python-headless)
+markers = [
+    "pupil-apriltags>=1.0",   # AprilTag detection
+    # cctag – build from source: https://github.com/alicevision/CCTag
+    "pyzbar>=0.1.10",          # QR code detection fallback
+]
+# YOLO-based object detection
+yolo = [
+    "ultralytics>=8.0",
+]
+# 3-D processing: point clouds, plane detection, SLAM
+"3d" = [
+    "open3d>=0.17",
+]
+# Full installation (all optional features)
+all = [
+    "pupil-apriltags>=1.0",
+    "pyzbar>=0.1.10",
+    "ultralytics>=8.0",
+    "open3d>=0.17",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
