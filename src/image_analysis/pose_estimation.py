@@ -176,9 +176,9 @@ def backproject_to_3d(
     if depth_m <= 0.0:
         raise ValueError(f"depth_m must be positive, got {depth_m}")
 
-    K = calibration.camera_matrix
-    fx, fy = float(K[0, 0]), float(K[1, 1])
-    cx, cy = float(K[0, 2]), float(K[1, 2])
+    camera_matrix = calibration.camera_matrix
+    fx, fy = float(camera_matrix[0, 0]), float(camera_matrix[1, 1])
+    cx, cy = float(camera_matrix[0, 2]), float(camera_matrix[1, 2])
 
     x_m = (pixel_x - cx) * depth_m / fx
     y_m = (pixel_y - cy) * depth_m / fy
