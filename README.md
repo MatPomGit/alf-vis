@@ -200,6 +200,26 @@ Instrukcje obejmują:
 3. Uruchom testy i linter przed wystawieniem PR.
 4. Wypełnij szablon Pull Request.
 
+## ToDo
+Create src/image_analysis/camera.py – capture from Unitree G1 EDU camera (req. 1)
+Create src/image_analysis/calibration.py – chessboard calibration (req. 2)
+Create src/image_analysis/markers.py – AprilTag / ArUco / CCTag / QR detection (req. 3)
+Create src/image_analysis/yolo_detector.py – YOLO-based object detection (req. 4)
+Create src/image_analysis/object_classes.py – classification into 5 categories (req. 5)
+Create src/image_analysis/targeting.py – deviation from image center (req. 6)
+Create src/image_analysis/pose_estimation.py – 3D pose of objects (req. 7)
+Create src/image_analysis/slam.py – real-time SLAM (req. 8)
+Create src/image_analysis/plane_detection.py – flat surface detection in 3D (req. 9)
+Create src/image_analysis/viewer.py – 2D RGB and depth image viewer (req. 10)
+Create src/image_analysis/point_cloud.py – RGB+depth 3D synthesis (req. 11)
+Create src/image_analysis/map_visualizer.py – real-time 3D map view (req. 12)
+Create src/image_analysis/acquisition_metrics.py – acquisition error assessment (req. 13)
+Add corresponding tests for each new module
+Update src/image_analysis/__init__.py with new exports
+Update pyproject.toml with optional dependencies
+Update requirements.txt
+Update README.md and docs/index.md
+
 ---
 
 ## Licencja
