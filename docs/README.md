@@ -3,7 +3,7 @@
 ## Wymagania systemowe
 
 | Wymaganie     | Wersja minimalna |
-|---------------|-----------------|
+|---------------|------------------|
 | Python        | 3.11             |
 | pip           | 23.x             |
 | Git           | 2.x              |
@@ -107,6 +107,7 @@ Repozytorium zawiera dedykowane instrukcje dla agentów AI:
 | `CLAUDE.md`                           | Claude (Anthropic) |
 
 Instrukcje obejmują:
+
 - zasady stylu kodu (PEP 8, type hints, docstringi Google-style),
 - wymagania testowe (pytest, pokrycie > 80 %),
 - wzorce specyficzne dla analizy obrazu,
@@ -122,6 +123,7 @@ Instrukcje obejmują:
 4. Wypełnij szablon Pull Request.
 
 ## ToDo
+
 Create src/image_analysis/camera.py – capture from Unitree G1 EDU camera (req. 1)
 Create src/image_analysis/calibration.py – chessboard calibration (req. 2)
 Create src/image_analysis/markers.py – AprilTag / ArUco / CCTag / QR detection (req. 3)
@@ -136,7 +138,7 @@ Create src/image_analysis/point_cloud.py – RGB+depth 3D synthesis (req. 11)
 Create src/image_analysis/map_visualizer.py – real-time 3D map view (req. 12)
 Create src/image_analysis/acquisition_metrics.py – acquisition error assessment (req. 13)
 Add corresponding tests for each new module
-Update src/image_analysis/__init__.py with new exports
+Update src/image_analysis/__init__.py with new exports  
 Update pyproject.toml with optional dependencies
 Update requirements.txt
 Update README.md and docs/index.md
