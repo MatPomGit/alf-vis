@@ -124,6 +124,8 @@ class UnitreeCamera:
             RuntimeError: If the stream cannot be opened with the given
                 :attr:`CameraConfig.source`.
         """
+        print(list_available_cameras())
+        
         # TODO(#camera): Replace with Unitree SDK2 transport when running on
         # the robot.  For desktop testing, fall back to cv2.VideoCapture.
         self._cap = cv2.VideoCapture(self._config.source)
@@ -259,3 +261,15 @@ def list_available_cameras(max_index: int = 8) -> list[int]:
             cap.release()
     logger.debug("Available cameras: %s", available)
     return available
+
+if __name__ == "__main__":
+    config = CameraConfig(source=0)
+
+    with UnitreeCamera(config) as cam:
+        for frame in cam.stream_rgb():
+            cv2.imshow("Camera", frame)
+
+            if cv2.waitKey(1) & 0xFF == 27:  # ESC
+                break
+
+    cv2.destroyAllWindows()

@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<indexing>
+ <object alt="" name="Obraz1" object_type="graphic"/>
+ <object index="13" name="Tabela1" object_type="table"/>
+ <paragraph index="21" node_type="writer" parent_index="13">Original author </paragraph>
+ <paragraph index="24" node_type="writer" parent_index="13">Vitaliy Lyudvichenko </paragraph>
+ <paragraph index="27" node_type="writer" parent_index="13">Compatibility </paragraph>
+ <paragraph index="30" node_type="writer" parent_index="13">OpenCV &gt;= 3.3 </paragraph>
+ <paragraph index="33" node_type="writer">Introduction</paragraph>
+ <paragraph index="34" node_type="writer">In this tutorial you will learn how to use opencv_dnn module for image classification by using GoogLeNet trained network from Caffe model zoo.</paragraph>
+ <paragraph index="35" node_type="writer">We will demonstrate results of this example on the following picture.  </paragraph>
+ <paragraph index="36" node_type="writer">Source Code</paragraph>
+ <paragraph index="37" node_type="writer">We will be using snippets from the example application, that can be downloaded here.</paragraph>
+ <paragraph index="38" node_type="writer">#include &lt;fstream&gt;</paragraph>
+ <paragraph index="39" node_type="writer">#include &lt;sstream&gt;</paragraph>
+ <paragraph index="40" node_type="writer">#include &lt;iostream&gt;</paragraph>
+ <paragraph index="41" node_type="writer">#include &lt;opencv2/dnn.hpp&gt;</paragraph>
+ <paragraph index="42" node_type="writer">#include &lt;opencv2/imgproc.hpp&gt;</paragraph>
+ <paragraph index="43" node_type="writer">#include &lt;opencv2/highgui.hpp&gt;</paragraph>
+ <paragraph index="44" node_type="writer">#include &quot;common.hpp&quot;</paragraph>
+ <paragraph index="45" node_type="writer">std::string keys =</paragraph>
+ <paragraph index="46" node_type="writer">&quot;{ help h | | Print help message. }&quot;</paragraph>
+ <paragraph index="47" node_type="writer">&quot;{ @alias | | An alias name of model to extract preprocessing parameters from models.yml file. }&quot;</paragraph>
+ <paragraph index="48" node_type="writer">&quot;{ zoo | models.yml | An optional path to file with preprocessing parameters }&quot;</paragraph>
+ <paragraph index="49" node_type="writer">&quot;{ input i | | Path to input image or video file. Skip this argument to capture frames from a camera.}&quot;</paragraph>
+ <paragraph index="50" node_type="writer">&quot;{ initial_width | 0 | Preprocess input image by initial resizing to a specific width.}&quot;</paragraph>
+ <paragraph index="51" node_type="writer">&quot;{ initial_height | 0 | Preprocess input image by initial resizing to a specific height.}&quot;</paragraph>
+ <paragraph index="52" node_type="writer">&quot;{ std | 0.0 0.0 0.0 | Preprocess input image by dividing on a standard deviation.}&quot;</paragraph>
+ <paragraph index="53" node_type="writer">&quot;{ crop | false | Preprocess input image by center cropping.}&quot;</paragraph>
+ <paragraph index="54" node_type="writer">&quot;{ framework f | | Optional name of an origin framework of the model. Detect it automatically if it does not set. }&quot;</paragraph>
+ <paragraph index="55" node_type="writer">&quot;{ needSoftmax | false | Use Softmax to post-process the output of the net.}&quot;</paragraph>
+ <paragraph index="56" node_type="writer">&quot;{ classes | | Optional path to a text file with names of classes. }&quot;</paragraph>
+ <paragraph index="57" node_type="writer">&quot;{ backend | 0 | Choose one of computation backends: &quot;</paragraph>
+ <paragraph index="58" node_type="writer">&quot;0: automatically (by default), &quot;</paragraph>
+ <paragraph index="59" node_type="writer">&quot;1: Halide language (http://halide-lang.org/), &quot;</paragraph>
+ <paragraph index="60" node_type="writer">&quot;2: Intel's Deep Learning Inference Engine (https://software.intel.com/openvino-toolkit), &quot;</paragraph>
+ <paragraph index="61" node_type="writer">&quot;3: OpenCV implementation, &quot;</paragraph>
+ <paragraph index="62" node_type="writer">&quot;4: VKCOM, &quot;</paragraph>
+ <paragraph index="63" node_type="writer">&quot;5: CUDA, &quot;</paragraph>
+ <paragraph index="64" node_type="writer">&quot;6: WebNN }&quot;</paragraph>
+ <paragraph index="65" node_type="writer">&quot;{ target | 0 | Choose one of target computation devices: &quot;</paragraph>
+ <paragraph index="66" node_type="writer">&quot;0: CPU target (by default), &quot;</paragraph>
+ <paragraph index="67" node_type="writer">&quot;1: OpenCL, &quot;</paragraph>
+ <paragraph index="68" node_type="writer">&quot;2: OpenCL fp16 (half-float precision), &quot;</paragraph>
+ <paragraph index="69" node_type="writer">&quot;3: VPU, &quot;</paragraph>
+ <paragraph index="70" node_type="writer">&quot;4: Vulkan, &quot;</paragraph>
+ <paragraph index="71" node_type="writer">&quot;6: CUDA, &quot;</paragraph>
+ <paragraph index="72" node_type="writer">&quot;7: CUDA fp16 (half-float preprocess) }&quot;;</paragraph>
+ <paragraph index="73" node_type="writer">using namespace cv;</paragraph>
+ <paragraph index="74" node_type="writer">using namespace dnn;</paragraph>
+ <paragraph index="75" node_type="writer">std::vector&lt;std::string&gt; classes;</paragraph>
+ <paragraph index="76" node_type="writer">int main(int argc, char** argv)</paragraph>
+ <paragraph index="77" node_type="writer">{</paragraph>
+ <paragraph index="78" node_type="writer">CommandLineParser parser(argc, argv, keys);</paragraph>
+ <paragraph index="79" node_type="writer">const std::string modelName = parser.get&lt;String&gt;(&quot;@alias&quot;);</paragraph>
+ <paragraph index="80" node_type="writer">const std::string zooFile = parser.get&lt;String&gt;(&quot;zoo&quot;);</paragraph>
+ <paragraph index="81" node_type="writer">keys += genPreprocArguments(modelName, zooFile);</paragraph>
+ <paragraph index="82" node_type="writer">parser = CommandLineParser(argc, argv, keys);</paragraph>
+ <paragraph index="83" node_type="writer">parser.about(&quot;Use this script to run classification deep learning networks using OpenCV.&quot;);</paragraph>
+ <paragraph index="84" node_type="writer">if (argc == 1 || parser.has(&quot;help&quot;))</paragraph>
+ <paragraph index="85" node_type="writer">{</paragraph>
+ <paragraph index="86" node_type="writer">parser.printMessage();</paragraph>
+ <paragraph index="87" node_type="writer">return 0;</paragraph>
+ <paragraph index="88" node_type="writer">}</paragraph>
+ <paragraph index="89" node_type="writer">int rszWidth = parser.get&lt;int&gt;(&quot;initial_width&quot;);</paragraph>
+ <paragraph index="90" node_type="writer">int rszHeight = parser.get&lt;int&gt;(&quot;initial_height&quot;);</paragraph>
+ <paragraph index="91" node_type="writer">float scale = parser.get&lt;float&gt;(&quot;scale&quot;);</paragraph>
+ <paragraph index="92" node_type="writer">Scalar mean = parser.get&lt;Scalar&gt;(&quot;mean&quot;);</paragraph>
+ <paragraph index="93" node_type="writer">Scalar std = parser.get&lt;Scalar&gt;(&quot;std&quot;);</paragraph>
+ <paragraph index="94" node_type="writer">bool swapRB = parser.get&lt;bool&gt;(&quot;rgb&quot;);</paragraph>
+ <paragraph index="95" node_type="writer">bool crop = parser.get&lt;bool&gt;(&quot;crop&quot;);</paragraph>
+ <paragraph index="96" node_type="writer">int inpWidth = parser.get&lt;int&gt;(&quot;width&quot;);</paragraph>
+ <paragraph index="97" node_type="writer">int inpHeight = parser.get&lt;int&gt;(&quot;height&quot;);</paragraph>
+ <paragraph index="98" node_type="writer">String model = findFile(parser.get&lt;String&gt;(&quot;model&quot;));</paragraph>
+ <paragraph index="99" node_type="writer">String config = findFile(parser.get&lt;String&gt;(&quot;config&quot;));</paragraph>
+ <paragraph index="100" node_type="writer">String framework = parser.get&lt;String&gt;(&quot;framework&quot;);</paragraph>
+ <paragraph index="101" node_type="writer">int backendId = parser.get&lt;int&gt;(&quot;backend&quot;);</paragraph>
+ <paragraph index="102" node_type="writer">int targetId = parser.get&lt;int&gt;(&quot;target&quot;);</paragraph>
+ <paragraph index="103" node_type="writer">bool needSoftmax = parser.get&lt;bool&gt;(&quot;needSoftmax&quot;);</paragraph>
+ <paragraph index="104" node_type="writer">std::cout&lt;&lt;&quot;mean: &quot;&lt;&lt;mean&lt;&lt;std::endl;</paragraph>
+ <paragraph index="105" node_type="writer">std::cout&lt;&lt;&quot;std: &quot;&lt;&lt;std&lt;&lt;std::endl;</paragraph>
+ <paragraph index="106" node_type="writer">// Open file with classes names.</paragraph>
+ <paragraph index="107" node_type="writer">if (parser.has(&quot;classes&quot;))</paragraph>
+ <paragraph index="108" node_type="writer">{</paragraph>
+ <paragraph index="109" node_type="writer">std::string file = parser.get&lt;String&gt;(&quot;classes&quot;);</paragraph>
+ <paragraph index="110" node_type="writer">std::ifstream ifs(file.c_str());</paragraph>
+ <paragraph index="111" node_type="writer">if (!ifs.is_open())</paragraph>
+ <paragraph index="112" node_type="writer">CV_Error(Error::StsError, &quot;File &quot; + file + &quot; not found&quot;);</paragraph>
+ <paragraph index="113" node_type="writer">std::string line;</paragraph>
+ <paragraph index="114" node_type="writer">while (std::getline(ifs, line))</paragraph>
+ <paragraph index="115" node_type="writer">{</paragraph>
+ <paragraph index="116" node_type="writer">classes.push_back(line);</paragraph>
+ <paragraph index="117" node_type="writer">}</paragraph>
+ <paragraph index="118" node_type="writer">}</paragraph>
+ <paragraph index="119" node_type="writer">if (!parser.check())</paragraph>
+ <paragraph index="120" node_type="writer">{</paragraph>
+ <paragraph index="121" node_type="writer">parser.printErrors();</paragraph>
+ <paragraph index="122" node_type="writer">return 1;</paragraph>
+ <paragraph index="123" node_type="writer">}</paragraph>
+ <paragraph index="124" node_type="writer">CV_Assert(!model.empty());</paragraph>
+ <paragraph index="125" node_type="writer">Net net = readNet(model, config, framework);</paragraph>
+ <paragraph index="126" node_type="writer">net.setPreferableBackend(backendId);</paragraph>
+ <paragraph index="127" node_type="writer">net.setPreferableTarget(targetId);</paragraph>
+ <paragraph index="128" node_type="writer">// Create a window</paragraph>
+ <paragraph index="129" node_type="writer">static const std::string kWinName = &quot;Deep learning image classification in OpenCV&quot;;</paragraph>
+ <paragraph index="130" node_type="writer">namedWindow(kWinName, WINDOW_NORMAL);</paragraph>
+ <paragraph index="131" node_type="writer">VideoCapture cap;</paragraph>
+ <paragraph index="132" node_type="writer">if (parser.has(&quot;input&quot;))</paragraph>
+ <paragraph index="133" node_type="writer">cap.open(parser.get&lt;String&gt;(&quot;input&quot;));</paragraph>
+ <paragraph index="134" node_type="writer">else</paragraph>
+ <paragraph index="135" node_type="writer">cap.open(0);</paragraph>
+ <paragraph index="136" node_type="writer">// Process frames.</paragraph>
+ <paragraph index="137" node_type="writer">Mat frame, blob;</paragraph>
+ <paragraph index="138" node_type="writer">while (waitKey(1) &lt; 0)</paragraph>
+ <paragraph index="139" node_type="writer">{</paragraph>
+ <paragraph index="140" node_type="writer">cap &gt;&gt; frame;</paragraph>
+ <paragraph index="141" node_type="writer">if (frame.empty())</paragraph>
+ <paragraph index="142" node_type="writer">{</paragraph>
+ <paragraph index="143" node_type="writer">waitKey();</paragraph>
+ <paragraph index="144" node_type="writer">break;</paragraph>
+ <paragraph index="145" node_type="writer">}</paragraph>
+ <paragraph index="146" node_type="writer">if (rszWidth != 0 &amp;&amp; rszHeight != 0)</paragraph>
+ <paragraph index="147" node_type="writer">{</paragraph>
+ <paragraph index="148" node_type="writer">resize(frame, frame, Size(rszWidth, rszHeight));</paragraph>
+ <paragraph index="149" node_type="writer">}</paragraph>
+ <paragraph index="150" node_type="writer">blobFromImage(frame, blob, scale, Size(inpWidth, inpHeight), mean, swapRB, crop);</paragraph>
+ <paragraph index="151" node_type="writer">// Check std values.</paragraph>
+ <paragraph index="152" node_type="writer">if (std.val[0] != 0.0 &amp;&amp; std.val[1] != 0.0 &amp;&amp; std.val[2] != 0.0)</paragraph>
+ <paragraph index="153" node_type="writer">{</paragraph>
+ <paragraph index="154" node_type="writer">// Divide blob by std.</paragraph>
+ <paragraph index="155" node_type="writer">divide(blob, std, blob);</paragraph>
+ <paragraph index="156" node_type="writer">}</paragraph>
+ <paragraph index="157" node_type="writer">net.setInput(blob);</paragraph>
+ <paragraph index="158" node_type="writer">// double t_sum = 0.0;</paragraph>
+ <paragraph index="159" node_type="writer">// double t;</paragraph>
+ <paragraph index="160" node_type="writer">int classId;</paragraph>
+ <paragraph index="161" node_type="writer">double confidence;</paragraph>
+ <paragraph index="162" node_type="writer">cv::TickMeter timeRecorder;</paragraph>
+ <paragraph index="163" node_type="writer">timeRecorder.reset();</paragraph>
+ <paragraph index="164" node_type="writer">Mat prob = net.forward();</paragraph>
+ <paragraph index="165" node_type="writer">double t1;</paragraph>
+ <paragraph index="166" node_type="writer">timeRecorder.start();</paragraph>
+ <paragraph index="167" node_type="writer">prob = net.forward();</paragraph>
+ <paragraph index="168" node_type="writer">timeRecorder.stop();</paragraph>
+ <paragraph index="169" node_type="writer">t1 = timeRecorder.getTimeMilli();</paragraph>
+ <paragraph index="170" node_type="writer">timeRecorder.reset();</paragraph>
+ <paragraph index="171" node_type="writer">for(int i = 0; i &lt; 200; i++) {</paragraph>
+ <paragraph index="172" node_type="writer">timeRecorder.start();</paragraph>
+ <paragraph index="173" node_type="writer">prob = net.forward();</paragraph>
+ <paragraph index="174" node_type="writer">timeRecorder.stop();</paragraph>
+ <paragraph index="175" node_type="writer">Point classIdPoint;</paragraph>
+ <paragraph index="176" node_type="writer">minMaxLoc(prob.reshape(1, 1), 0, &amp;confidence, 0, &amp;classIdPoint);</paragraph>
+ <paragraph index="177" node_type="writer">classId = classIdPoint.x;</paragraph>
+ <paragraph index="178" node_type="writer">// Put efficiency information.</paragraph>
+ <paragraph index="179" node_type="writer">// std::vector&lt;double&gt; layersTimes;</paragraph>
+ <paragraph index="180" node_type="writer">// double freq = getTickFrequency() / 1000;</paragraph>
+ <paragraph index="181" node_type="writer">// t = net.getPerfProfile(layersTimes) / freq;</paragraph>
+ <paragraph index="182" node_type="writer">// t_sum += t;</paragraph>
+ <paragraph index="183" node_type="writer">}</paragraph>
+ <paragraph index="184" node_type="writer">if (needSoftmax == true)</paragraph>
+ <paragraph index="185" node_type="writer">{</paragraph>
+ <paragraph index="186" node_type="writer">float maxProb = 0.0;</paragraph>
+ <paragraph index="187" node_type="writer">float sum = 0.0;</paragraph>
+ <paragraph index="188" node_type="writer">Mat softmaxProb;</paragraph>
+ <paragraph index="189" node_type="writer">maxProb = *std::max_element(prob.begin&lt;float&gt;(), prob.end&lt;float&gt;());</paragraph>
+ <paragraph index="190" node_type="writer">cv::exp(prob-maxProb, softmaxProb);</paragraph>
+ <paragraph index="191" node_type="writer">sum = (float)cv::sum(softmaxProb)[0];</paragraph>
+ <paragraph index="192" node_type="writer">softmaxProb /= sum;</paragraph>
+ <paragraph index="193" node_type="writer">Point classIdPoint;</paragraph>
+ <paragraph index="194" node_type="writer">minMaxLoc(softmaxProb.reshape(1, 1), 0, &amp;confidence, 0, &amp;classIdPoint);</paragraph>
+ <paragraph index="195" node_type="writer">classId = classIdPoint.x;</paragraph>
+ <paragraph index="196" node_type="writer">}</paragraph>
+ <paragraph index="197" node_type="writer">std::string label = format(&quot;Inference time of 1 round: %.2f ms&quot;, t1);</paragraph>
+ <paragraph index="198" node_type="writer">std::string label2 = format(&quot;Average time of 200 rounds: %.2f ms&quot;, timeRecorder.getTimeMilli()/200);</paragraph>
+ <paragraph index="199" node_type="writer">putText(frame, label, Point(0, 15), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0));</paragraph>
+ <paragraph index="200" node_type="writer">putText(frame, label2, Point(0, 35), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0));</paragraph>
+ <paragraph index="201" node_type="writer">// Print predicted class.</paragraph>
+ <paragraph index="202" node_type="writer">label = format(&quot;%s: %.4f&quot;, (classes.empty() ? format(&quot;Class #%d&quot;, classId).c_str() :</paragraph>
+ <paragraph index="203" node_type="writer">classes[classId].c_str()),</paragraph>
+ <paragraph index="204" node_type="writer">confidence);</paragraph>
+ <paragraph index="205" node_type="writer">putText(frame, label, Point(0, 55), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0));</paragraph>
+ <paragraph index="206" node_type="writer">imshow(kWinName, frame);</paragraph>
+ <paragraph index="207" node_type="writer">}</paragraph>
+ <paragraph index="208" node_type="writer">return 0;</paragraph>
+ <paragraph index="209" node_type="writer">}</paragraph>
+ <paragraph index="210" node_type="writer">Explanation</paragraph>
+ <paragraph index="211" node_type="writer">Firstly, download GoogLeNet model files: bvlc_googlenet.prototxt and bvlc_googlenet.caffemodel</paragraph>
+ <paragraph index="212" node_type="writer">Also you need file with names of ILSVRC2012 classes: classification_classes_ILSVRC2012.txt.</paragraph>
+ <paragraph index="213" node_type="writer">Put these files into working dir of this program example.</paragraph>
+ <paragraph index="214" node_type="writer">Read and initialize network using path to .prototxt and .caffemodel files </paragraph>
+ <paragraph index="215" node_type="writer">Net net = readNet(model, config, framework);</paragraph>
+ <paragraph index="216" node_type="writer">net.setPreferableBackend(backendId);</paragraph>
+ <paragraph index="217" node_type="writer">net.setPreferableTarget(targetId);</paragraph>
+ <paragraph index="218" node_type="writer">You can skip an argument framework if one of the files model or config has an extension .caffemodel or .prototxt. This way function cv::dnn::readNet can automatically detects a model's format.</paragraph>
+ <paragraph index="219" node_type="writer">Read input image and convert to the blob, acceptable by GoogleNet </paragraph>
+ <paragraph index="220" node_type="writer">VideoCapture cap;</paragraph>
+ <paragraph index="221" node_type="writer">if (parser.has(&quot;input&quot;))</paragraph>
+ <paragraph index="222" node_type="writer">cap.open(parser.get&lt;String&gt;(&quot;input&quot;));</paragraph>
+ <paragraph index="223" node_type="writer">else</paragraph>
+ <paragraph index="224" node_type="writer">cap.open(0);</paragraph>
+ <paragraph index="225" node_type="writer">cv::VideoCapture can load both images and videos.</paragraph>
+ <paragraph index="226" node_type="writer">blobFromImage(frame, blob, scale, Size(inpWidth, inpHeight), mean, swapRB, crop);</paragraph>
+ <paragraph index="227" node_type="writer">// Check std values.</paragraph>
+ <paragraph index="228" node_type="writer">if (std.val[0] != 0.0 &amp;&amp; std.val[1] != 0.0 &amp;&amp; std.val[2] != 0.0)</paragraph>
+ <paragraph index="229" node_type="writer">{</paragraph>
+ <paragraph index="230" node_type="writer">// Divide blob by std.</paragraph>
+ <paragraph index="231" node_type="writer">divide(blob, std, blob);</paragraph>
+ <paragraph index="232" node_type="writer">}</paragraph>
+ <paragraph index="233" node_type="writer">We convert the image to a 4-dimensional blob (so-called batch) with 1x3x224x224 shape after applying necessary pre-processing like resizing and mean subtraction (-104, -117, -123) for each blue, green and red channels correspondingly using cv::dnn::blobFromImage function.</paragraph>
+ <paragraph index="234" node_type="writer">Pass the blob to the network </paragraph>
+ <paragraph index="235" node_type="writer">net.setInput(blob);</paragraph>
+ <paragraph index="236" node_type="writer">Make forward pass </paragraph>
+ <paragraph index="237" node_type="writer">// double t_sum = 0.0;</paragraph>
+ <paragraph index="238" node_type="writer">// double t;</paragraph>
+ <paragraph index="239" node_type="writer">int classId;</paragraph>
+ <paragraph index="240" node_type="writer">double confidence;</paragraph>
+ <paragraph index="241" node_type="writer">cv::TickMeter timeRecorder;</paragraph>
+ <paragraph index="242" node_type="writer">timeRecorder.reset();</paragraph>
+ <paragraph index="243" node_type="writer">Mat prob = net.forward();</paragraph>
+ <paragraph index="244" node_type="writer">double t1;</paragraph>
+ <paragraph index="245" node_type="writer">timeRecorder.start();</paragraph>
+ <paragraph index="246" node_type="writer">prob = net.forward();</paragraph>
+ <paragraph index="247" node_type="writer">timeRecorder.stop();</paragraph>
+ <paragraph index="248" node_type="writer">t1 = timeRecorder.getTimeMilli();</paragraph>
+ <paragraph index="249" node_type="writer">timeRecorder.reset();</paragraph>
+ <paragraph index="250" node_type="writer">for(int i = 0; i &lt; 200; i++) {</paragraph>
+ <paragraph index="251" node_type="writer">During the forward pass output of each network layer is computed, but in this example we need output from the last layer only. </paragraph>
+ <paragraph index="252" node_type="writer">Determine the best class </paragraph>
+ <paragraph index="253" node_type="writer">Point classIdPoint;</paragraph>
+ <paragraph index="254" node_type="writer">minMaxLoc(prob.reshape(1, 1), 0, &amp;confidence, 0, &amp;classIdPoint);</paragraph>
+ <paragraph index="255" node_type="writer">classId = classIdPoint.x;</paragraph>
+ <paragraph index="256" node_type="writer">We put the output of network, which contain probabilities for each of 1000 ILSVRC2012 image classes, to the prob blob. And find the index of element with maximal value in this one. This index corresponds to the class of the image. </paragraph>
+ <paragraph index="257" node_type="writer">Run an example from command line </paragraph>
+ <paragraph index="258" node_type="writer">./example_dnn_classification --model=bvlc_googlenet.caffemodel --config=bvlc_googlenet.prototxt --width=224 --height=224 --classes=classification_classes_ILSVRC2012.txt --input=space_shuttle.jpg --mean=&quot;104 117 123&quot;</paragraph>
+ <paragraph index="259" node_type="writer">For our image we get prediction of class space shuttle with more than 99% sureness. </paragraph>
+</indexing>
