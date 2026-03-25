@@ -10,7 +10,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
-import cv2
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -97,23 +96,28 @@ def apply_nms(
     if not detections:
         return []
 
-    boxes = np.array([[d.bbox[0], d.bbox[1], d.bbox[2], d.bbox[3]] for d in detections])
-    scores = np.array([d.confidence for d in detections])
+    def _iou(a: tuple[int, int, int, int], b: tuple[int, int, int, int]) -> float:
+        ax1, ay1, ax2, ay2 = a
+        bx1, by1, bx2, by2 = b
+        inter_x1 = max(ax1, bx1)
+        inter_y1 = max(ay1, by1)
+        inter_x2 = min(ax2, bx2)
+        inter_y2 = min(ay2, by2)
+        iw = max(0, inter_x2 - inter_x1)
+        ih = max(0, inter_y2 - inter_y1)
+        inter = float(iw * ih)
+        area_a = float(max(0, ax2 - ax1) * max(0, ay2 - ay1))
+        area_b = float(max(0, bx2 - bx1) * max(0, by2 - by1))
+        union = area_a + area_b - inter
+        return 0.0 if union <= 0 else inter / union
 
-    # cv2.dnn.NMSBoxes expects (x, y, w, h) format
-    boxes_xywh = boxes.copy().tolist()
-    for i, (x1, y1, x2, y2) in enumerate(boxes.tolist()):
-        boxes_xywh[i] = [x1, y1, int(x2 - x1), int(y2 - y1)]
+    sorted_dets = sorted(detections, key=lambda d: d.confidence, reverse=True)
+    kept: list[Detection] = []
+    for cand in sorted_dets:
+        if all(_iou(cand.bbox, k.bbox) <= iou_threshold for k in kept):
+            kept.append(cand)
 
-    indices = cv2.dnn.NMSBoxes(
-        boxes_xywh,
-        scores.tolist(),
-        score_threshold=0.0,
-        nms_threshold=iou_threshold,
-    )
-
-    kept_indices: list[int] = indices.flatten().tolist() if len(indices) > 0 else []
-    return [detections[i] for i in kept_indices]
+    return kept
 
 
 def draw_bounding_boxes(
@@ -140,19 +144,20 @@ def draw_bounding_boxes(
     _validate_bgr_image(image)
     output = image.copy()
 
+    h, w = output.shape[:2]
+    t = max(1, thickness)
     for det in detections:
         x1, y1, x2, y2 = det.bbox
-        cv2.rectangle(output, (x1, y1), (x2, y2), color, thickness)
-        label_text = f"{det.label}: {det.confidence:.2f}"
-        cv2.putText(
-            output,
-            label_text,
-            (x1, max(y1 - 5, 0)),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            color,
-            thickness,
-        )
+        x1 = max(0, min(w - 1, x1))
+        x2 = max(0, min(w, x2))
+        y1 = max(0, min(h - 1, y1))
+        y2 = max(0, min(h, y2))
+        if x2 <= x1 or y2 <= y1:
+            continue
+        output[y1 : min(y1 + t, y2), x1:x2] = color
+        output[max(y2 - t, y1) : y2, x1:x2] = color
+        output[y1:y2, x1 : min(x1 + t, x2)] = color
+        output[y1:y2, max(x2 - t, x1) : x2] = color
 
     return output
 

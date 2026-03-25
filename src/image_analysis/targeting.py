@@ -23,7 +23,6 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
-import cv2
 import numpy as np
 
 from image_analysis.detection import Detection
@@ -177,9 +176,16 @@ def draw_crosshair(
     h, w = out.shape[:2]
     cx, cy = w // 2, h // 2
 
-    cv2.line(out, (cx - radius, cy), (cx + radius, cy), color, thickness)
-    cv2.line(out, (cx, cy - radius), (cx, cy + radius), color, thickness)
-    cv2.circle(out, (cx, cy), radius // 2, color, thickness)
+    _draw_line(out, cx - radius, cy, cx + radius, cy, color, thickness)
+    _draw_line(out, cx, cy - radius, cx, cy + radius, color, thickness)
+
+    ring_r = max(1, radius // 2)
+    steps = max(16, ring_r * 8)
+    angles = np.linspace(0.0, 2.0 * np.pi, steps, endpoint=False)
+    xs = (cx + ring_r * np.cos(angles)).astype(int)
+    ys = (cy + ring_r * np.sin(angles)).astype(int)
+    valid = (xs >= 0) & (xs < w) & (ys >= 0) & (ys < h)
+    out[ys[valid], xs[valid]] = color
 
     return out
 
@@ -215,5 +221,29 @@ def draw_target_line(
     tx = int((x1 + x2) / 2)
     ty = int((y1 + y2) / 2)
 
-    cv2.arrowedLine(out, (cx, cy), (tx, ty), color, thickness, tipLength=0.15)
+    _draw_line(out, cx, cy, tx, ty, color, thickness)
     return out
+
+
+def _draw_line(
+    image: np.ndarray,
+    x0: int,
+    y0: int,
+    x1: int,
+    y1: int,
+    color: tuple[int, int, int],
+    thickness: int,
+) -> None:
+    """Draw a simple clipped line on an image in-place using linear interpolation."""
+    h, w = image.shape[:2]
+    steps = int(max(abs(x1 - x0), abs(y1 - y0), 1))
+    t = max(1, thickness)
+    for i in range(steps + 1):
+        x = int(round(x0 + (x1 - x0) * i / steps))
+        y = int(round(y0 + (y1 - y0) * i / steps))
+        if 0 <= x < w and 0 <= y < h:
+            y0c = max(0, y - t // 2)
+            y1c = min(h, y + (t + 1) // 2)
+            x0c = max(0, x - t // 2)
+            x1c = min(w, x + (t + 1) // 2)
+            image[y0c:y1c, x0c:x1c] = color
