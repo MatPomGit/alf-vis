@@ -285,6 +285,8 @@ def compute_reprojection_error(
     Returns:
         List of per-view RMS reprojection errors (one float per view).
         Empty list if *result* has no extrinsic vectors stored.
+        Entries are :data:`math.nan` when per-view image points are not
+        available in *result* (see TODO in implementation).
     """
     if not result.rvecs or not result.tvecs:
         return []
@@ -302,11 +304,11 @@ def compute_reprojection_error(
             result.camera_matrix,
             result.dist_coeffs,
         )
-        # Use a placeholder for actual corners; real usage requires storing
-        # image_points alongside the CalibrationResult.
+        # image_points are not stored in CalibrationResult, so per-view error
+        # cannot be computed here.  Return NaN to signal unavailability.
         # TODO(#calibration): Store image_points in CalibrationResult and use
         # them here for accurate per-view error computation.
         _ = projected
-        errors.append(0.0)
+        errors.append(float("nan"))
 
     return errors

@@ -73,29 +73,25 @@ class Plane3D:
     )
 
     @property
-    def is_horizontal(self, threshold_deg: float = HORIZONTAL_ANGLE_DEG) -> bool:
+    def is_horizontal(self) -> bool:
         """Return ``True`` if the plane is approximately horizontal.
 
         A plane is horizontal when its normal is nearly parallel to the
-        world Z-axis (up direction).
-
-        Args:
-            threshold_deg: Maximum deviation in degrees from the Z-axis.
+        world Z-axis (up direction).  Uses :data:`HORIZONTAL_ANGLE_DEG` as
+        the maximum deviation threshold.
         """
-        cos_thresh = float(np.cos(np.radians(threshold_deg)))
+        cos_thresh = float(np.cos(np.radians(HORIZONTAL_ANGLE_DEG)))
         return float(abs(self.normal[2])) >= cos_thresh
 
     @property
-    def is_vertical(self, threshold_deg: float = VERTICAL_ANGLE_DEG) -> bool:
+    def is_vertical(self) -> bool:
         """Return ``True`` if the plane is approximately vertical.
 
         A plane is vertical when its normal is nearly perpendicular to the
-        world Z-axis.
-
-        Args:
-            threshold_deg: Maximum deviation in degrees from perpendicularity.
+        world Z-axis.  Uses :data:`VERTICAL_ANGLE_DEG` as the maximum
+        deviation threshold.
         """
-        cos_thresh = float(np.cos(np.radians(90.0 - threshold_deg)))
+        cos_thresh = float(np.cos(np.radians(90.0 - VERTICAL_ANGLE_DEG)))
         return float(abs(self.normal[2])) <= cos_thresh
 
 
