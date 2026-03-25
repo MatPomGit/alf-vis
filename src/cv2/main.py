@@ -1,11 +1,17 @@
 import argparse
+from pathlib import Path
 
 import cv2
 from ultralytics import YOLO
 
-from depth_projection import bbox_to_3d
-from realsense import RealSense
-from world_map import WorldMap
+try:  # Support both `python -m src.cv2.main` and `python src/cv2/main.py`.
+    from .depth_projection import bbox_to_3d
+    from .realsense import RealSense
+    from .world_map import WorldMap
+except ImportError:
+    from depth_projection import bbox_to_3d
+    from realsense import RealSense
+    from world_map import WorldMap
 
 
 def draw_detection(frame, bbox, point_world=None):
@@ -39,7 +45,8 @@ def main():
     args = parse_args()
     rs = RealSense()
     world = WorldMap()
-    model = YOLO("yolov8n.pt")
+    model_path = Path(__file__).resolve().parent.parent / "yolov8n.pt"
+    model = YOLO(str(model_path))
 
     cap = None
     if not rs.available:
