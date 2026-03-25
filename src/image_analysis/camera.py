@@ -124,7 +124,7 @@ class UnitreeCamera:
             RuntimeError: If the stream cannot be opened with the given
                 :attr:`CameraConfig.source`.
         """
-        print(list_available_cameras())
+        logger.debug("Available cameras: %s", list_available_cameras())
         
         # TODO(#camera): Replace with Unitree SDK2 transport when running on
         # the robot.  For desktop testing, fall back to cv2.VideoCapture.
@@ -199,14 +199,9 @@ class UnitreeCamera:
         if not ok:
             raise RuntimeError("Failed to capture RGB frame.")
 
-        if self._config.enable_depth:
-            # TODO(#camera): Replace with actual depth sensor read.
-            h, w = rgb.shape[:2]
-            depth = np.zeros((h, w), dtype=np.float32)
-            logger.debug("Depth capture not yet implemented; returning zeros.")
-        else:
-            h, w = rgb.shape[:2]
-            depth = np.zeros((h, w), dtype=np.float32)
+        h, w = rgb.shape[:2]
+        depth = np.zeros((h, w), dtype=np.float32)
+        logger.debug("Depth capture not yet implemented; returning zeros.")
 
         return RgbdFrame(rgb=rgb, depth=depth)
 

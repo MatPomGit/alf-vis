@@ -67,7 +67,7 @@ def resize_image(image: np.ndarray, width: int, height: int) -> np.ndarray:
     interpolation = cv2.INTER_AREA if downscaling else cv2.INTER_LINEAR
 
     resized = cv2.resize(image, (width, height), interpolation=interpolation)
-    logger.debug("Resized image from (%d, %d) to (%d, %d)", original_h, original_w, height, width)
+    logger.debug("Resized image from (%d, %d) to (%d, %d)", original_w, original_h, width, height)
     return resized
 
 

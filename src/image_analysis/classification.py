@@ -55,14 +55,6 @@ def classify_image(
     label: str = "unknown"
     confidence: float = 0.0
 
-    if confidence < confidence_threshold:
-        logger.debug(
-            "Top prediction confidence %.4f is below threshold %.4f; returning 'unknown'",
-            confidence,
-            confidence_threshold,
-        )
-        return "unknown", 0.0
-
     logger.debug("Classified image as '%s' with confidence %.4f", label, confidence)
     return label, confidence
 
