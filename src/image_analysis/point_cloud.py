@@ -110,9 +110,9 @@ def create_point_cloud(
         )
 
     cfg = config or RgbdFusionConfig()
-    K = calibration.camera_matrix
-    fx, fy = float(K[0, 0]), float(K[1, 1])
-    cx, cy = float(K[0, 2]), float(K[1, 2])
+    camera_matrix = calibration.camera_matrix
+    fx, fy = float(camera_matrix[0, 0]), float(camera_matrix[1, 1])
+    cx, cy = float(camera_matrix[0, 2]), float(camera_matrix[1, 2])
 
     h, w = depth.shape[:2]
     s = cfg.stride
@@ -186,7 +186,6 @@ def filter_point_cloud(
         filtered, mask = pcd.remove_statistical_outlier(
             nb_neighbors=nb_neighbors, std_ratio=std_ratio
         )
-        kept = np.asarray(mask)
         return PointCloud(
             points=np.asarray(filtered.points),
             colors=np.asarray(filtered.colors).astype(np.float32),

@@ -141,8 +141,6 @@ def fit_plane_ransac(
     rng = np.random.default_rng(rng_seed)
     n_points = len(points)
     best_inliers = np.empty(0, dtype=np.int64)
-    best_normal = np.zeros(3, dtype=np.float64)
-    best_d = 0.0
 
     for _ in range(num_iterations):
         sample_idx = rng.choice(n_points, size=3, replace=False)
@@ -162,8 +160,6 @@ def fit_plane_ransac(
 
         if len(inliers) > len(best_inliers):
             best_inliers = inliers
-            best_normal = normal
-            best_d = d
 
     if len(best_inliers) < min_inlier_ratio * n_points:
         logger.debug(
