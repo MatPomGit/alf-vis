@@ -10,8 +10,12 @@ from pathlib import Path
 
 import numpy as np
 
-from realsense import RealSense
-from world_map import WorldMap
+try:  # Support both `python -m src.cv2.test_no_realsense` and script mode.
+    from .realsense import RealSense
+    from .world_map import WorldMap
+except ImportError:
+    from realsense import RealSense
+    from world_map import WorldMap
 
 
 def run_test(output_path="test_outputs/world_map_test.ply"):
