@@ -1,111 +1,63 @@
-class ResizeBilinearLayer CV_FINAL : public cv::dnn::Layer
-{
-public:
-ResizeBilinearLayer(const cv::dnn::LayerParams &params) : Layer(params)
-{
-CV_Assert(!params.get<bool>("align_corners", false));
-CV_Assert(!blobs.empty());
-for (size_t i = 0; i < blobs.size(); ++i)
-CV_Assert(blobs[i].type() == CV_32SC1);
-// There are two cases of input blob: a single blob which contains output
-// shape and two blobs with scaling factors.
-if (blobs.size() == 1)
-{
-CV_Assert(blobs[0].total() == 2);
-outHeight = blobs[0].at<int>(0, 0);
-outWidth = blobs[0].at<int>(0, 1);
-factorHeight = factorWidth = 0;
-}
-else
-{
-CV_Assert(blobs.size() == 2); CV_Assert(blobs[0].total() == 1); CV_Assert(blobs[1].total() == 1);
-factorHeight = blobs[0].at<int>(0, 0);
-factorWidth = blobs[1].at<int>(0, 0);
-outHeight = outWidth = 0;
-}
-}
-static cv::Ptr<cv::dnn::Layer> create(cv::dnn::LayerParams& params)
-{
-return cv::Ptr<cv::dnn::Layer>(new ResizeBilinearLayer(params));
-}
-virtual bool getMemoryShapes(const std::vector<std::vector<int> > &inputs,
-const int,
-std::vector<std::vector<int> > &outputs,
-std::vector<std::vector<int> > &) const CV_OVERRIDE
-{
-std::vector<int> outShape(4);
-outShape[0] = inputs[0][0]; // batch size
-outShape[1] = inputs[0][1]; // number of channels
-outShape[2] = outHeight != 0 ? outHeight : (inputs[0][2] * factorHeight);
-outShape[3] = outWidth != 0 ? outWidth : (inputs[0][3] * factorWidth);
-outputs.assign(1, outShape);
-return false;
-}
-virtual void finalize(cv::InputArrayOfArrays, cv::OutputArrayOfArrays outputs_arr) CV_OVERRIDE
-{
-std::vector<cv::Mat> outputs;
-outputs_arr.getMatVector(outputs);
-if (!outWidth && !outHeight)
-{
-outHeight = outputs[0].size[2];
-outWidth = outputs[0].size[3];
-}
-}
-// This implementation is based on a reference implementation from
-// https://github.com/tensorflow/tensorflow/blob/master/tensorflow/contrib/lite/kernels/internal/reference/reference_ops.h
-virtual void forward(cv::InputArrayOfArrays inputs_arr,
-cv::OutputArrayOfArrays outputs_arr,
-cv::OutputArrayOfArrays internals_arr) CV_OVERRIDE
-{
-if (inputs_arr.depth() == CV_16S)
-{
-// In case of DNN_TARGET_OPENCL_FP16 target the following method
-// converts data from FP16 to FP32 and calls this forward again.
-forward_fallback(inputs_arr, outputs_arr, internals_arr);
-return;
-}
-std::vector<cv::Mat> inputs, outputs;
-inputs_arr.getMatVector(inputs);
-outputs_arr.getMatVector(outputs);
-cv::Mat& inp = inputs[0];
-cv::Mat& out = outputs[0];
-const float* inpData = (float*)inp.data;
-float* outData = (float*)out.data;
-const int batchSize = inp.size[0];
-const int numChannels = inp.size[1];
-const int inpHeight = inp.size[2];
-const int inpWidth = inp.size[3];
-float heightScale = static_cast<float>(inpHeight) / outHeight;
-float widthScale = static_cast<float>(inpWidth) / outWidth;
-for (int b = 0; b < batchSize; ++b)
-{
-for (int y = 0; y < outHeight; ++y)
-{
-float input_y = y * heightScale;
-int y0 = static_cast<int>(std::floor(input_y));
-int y1 = std::min(y0 + 1, inpHeight - 1);
-for (int x = 0; x < outWidth; ++x)
-{
-float input_x = x * widthScale;
-int x0 = static_cast<int>(std::floor(input_x));
-int x1 = std::min(x0 + 1, inpWidth - 1);
-for (int c = 0; c < numChannels; ++c)
-{
-float interpolation =
-inpData[offset(inp.size, c, x0, y0, b)] * (1 - (input_y - y0)) * (1 - (input_x - x0)) +
-inpData[offset(inp.size, c, x0, y1, b)] * (input_y - y0) * (1 - (input_x - x0)) +
-inpData[offset(inp.size, c, x1, y0, b)] * (1 - (input_y - y0)) * (input_x - x0) +
-inpData[offset(inp.size, c, x1, y1, b)] * (input_y - y0) * (input_x - x0);
-outData[offset(out.size, c, x, y, b)] = interpolation;
-}
-}
-}
-}
-}
-private:
-static inline int offset(const cv::MatSize& size, int c, int x, int y, int b)
-{
-return x + size[3] * (y + size[2] * (c + size[1] * b));
-}
-int outWidth, outHeight, factorWidth, factorHeight;
-};
+"""Utilities for YOLO camera preprocessing.
+
+This module previously contained a pasted C++ OpenCV layer implementation, which made the
+Python file invalid and caused syntax errors during static checks/import.
+"""
+
+from __future__ import annotations
+
+import numpy as np
+
+
+def resize_bilinear_nchw(
+    tensor: np.ndarray,
+    out_height: int,
+    out_width: int,
+) -> np.ndarray:
+    """Resize an NCHW float tensor with bilinear interpolation.
+
+    Args:
+        tensor: Input array with shape ``(N, C, H, W)``.
+        out_height: Target output height.
+        out_width: Target output width.
+
+    Returns:
+        Resized tensor with shape ``(N, C, out_height, out_width)``.
+
+    Raises:
+        ValueError: If input shape is invalid or requested size is non-positive.
+    """
+    if tensor.ndim != 4:
+        raise ValueError(f"Expected tensor with 4 dimensions (N,C,H,W), got {tensor.shape}.")
+    if out_height <= 0 or out_width <= 0:
+        raise ValueError("Output height and width must be positive integers.")
+
+    batch, channels, in_height, in_width = tensor.shape
+    if in_height == out_height and in_width == out_width:
+        return tensor.copy()
+
+    y_coords = np.linspace(0, in_height - 1, out_height, dtype=np.float32)
+    x_coords = np.linspace(0, in_width - 1, out_width, dtype=np.float32)
+
+    y0 = np.floor(y_coords).astype(np.int32)
+    x0 = np.floor(x_coords).astype(np.int32)
+    y1 = np.clip(y0 + 1, 0, in_height - 1)
+    x1 = np.clip(x0 + 1, 0, in_width - 1)
+
+    wy = (y_coords - y0).astype(np.float32)
+    wx = (x_coords - x0).astype(np.float32)
+
+    output = np.empty((batch, channels, out_height, out_width), dtype=tensor.dtype)
+
+    for yi in range(out_height):
+        top = tensor[:, :, y0[yi], :]
+        bottom = tensor[:, :, y1[yi], :]
+
+        top_interp = top[:, :, x0] * (1.0 - wx) + top[:, :, x1] * wx
+        bottom_interp = bottom[:, :, x0] * (1.0 - wx) + bottom[:, :, x1] * wx
+        output[:, :, yi, :] = top_interp * (1.0 - wy[yi]) + bottom_interp * wy[yi]
+
+    return output
+
+
+__all__ = ["resize_bilinear_nchw"]
