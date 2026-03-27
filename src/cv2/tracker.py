@@ -5,6 +5,11 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
 
+try:
+    import cv2
+except Exception:  # pragma: no cover - optional at import time
+    cv2 = None
+
 
 BBox = Sequence[float]
 
@@ -51,6 +56,67 @@ def bbox_iou(a: BBox, b: BBox) -> float:
     if union <= 0.0:
         return 0.0
     return inter / union
+
+
+def cosine_distance(a: Optional[np.ndarray], b: Optional[np.ndarray]) -> float:
+    if a is None or b is None:
+        return 1.0
+    a = np.asarray(a, dtype=float).reshape(-1)
+    b = np.asarray(b, dtype=float).reshape(-1)
+    na = float(np.linalg.norm(a))
+    nb = float(np.linalg.norm(b))
+    if na <= 1e-12 or nb <= 1e-12:
+        return 1.0
+    similarity = float(np.dot(a, b) / (na * nb))
+    similarity = max(-1.0, min(1.0, similarity))
+    return 1.0 - similarity
+
+
+def _clip_bbox_to_image(bbox: BBox, width: int, height: int) -> Tuple[int, int, int, int]:
+    x1, y1, x2, y2 = [int(round(float(v))) for v in bbox]
+    x1 = max(0, min(width - 1, x1))
+    y1 = max(0, min(height - 1, y1))
+    x2 = max(0, min(width, x2))
+    y2 = max(0, min(height, y2))
+    if x2 <= x1:
+        x2 = min(width, x1 + 1)
+    if y2 <= y1:
+        y2 = min(height, y1 + 1)
+    return x1, y1, x2, y2
+
+
+def extract_appearance_embedding(
+    frame: Optional[np.ndarray],
+    bbox: BBox,
+    bins: Tuple[int, int, int] = (8, 8, 8),
+) -> Optional[np.ndarray]:
+    """Extract a lightweight appearance embedding from a bbox crop.
+
+    The embedding is an L2-normalized HSV color histogram. It is intentionally
+    lightweight so it works without additional model dependencies.
+    """
+    if frame is None or cv2 is None:
+        return None
+    if not isinstance(frame, np.ndarray) or frame.ndim != 3 or frame.shape[2] < 3:
+        return None
+
+    height, width = frame.shape[:2]
+    if width <= 0 or height <= 0:
+        return None
+
+    x1, y1, x2, y2 = _clip_bbox_to_image(bbox, width, height)
+    patch = frame[y1:y2, x1:x2]
+    if patch.size == 0:
+        return None
+
+    hsv = cv2.cvtColor(patch, cv2.COLOR_BGR2HSV)
+    hist = cv2.calcHist([hsv], [0, 1, 2], None, list(bins), [0, 180, 0, 256, 0, 256])
+    embedding = hist.astype(np.float32).reshape(-1)
+    norm = float(np.linalg.norm(embedding))
+    if norm <= 1e-12:
+        return None
+    embedding /= norm
+    return embedding
 
 
 class KalmanFilterBBoxCV:
@@ -126,6 +192,7 @@ class Track:
     confidence: float
     kalman: KalmanFilterBBoxCV
     world_point: Optional[np.ndarray] = None
+    appearance_embedding: Optional[np.ndarray] = None
     age: int = 1
     hits: int = 1
     missing: int = 0
@@ -145,6 +212,8 @@ class Track:
         class_name: str,
         confidence: float,
         world_point: Optional[np.ndarray],
+        appearance_embedding: Optional[np.ndarray],
+        embedding_momentum: float,
     ) -> None:
         self.bbox = np.asarray(self.kalman.update(bbox), dtype=float)
         self.class_id = int(class_id)
@@ -152,6 +221,15 @@ class Track:
         self.confidence = float(confidence)
         self.world_point = None if world_point is None else np.asarray(world_point, dtype=float)
         self.predicted_bbox = self.bbox.copy()
+        if appearance_embedding is not None:
+            appearance_embedding = np.asarray(appearance_embedding, dtype=float)
+            if self.appearance_embedding is None:
+                self.appearance_embedding = appearance_embedding.copy()
+            else:
+                alpha = float(np.clip(embedding_momentum, 0.0, 1.0))
+                mixed = alpha * self.appearance_embedding + (1.0 - alpha) * appearance_embedding
+                norm = float(np.linalg.norm(mixed))
+                self.appearance_embedding = mixed / norm if norm > 1e-12 else appearance_embedding.copy()
         self.hits += 1
         self.missing = 0
 
@@ -234,10 +312,21 @@ class HungarianAssigner:
 
 
 class SortTracker:
-    def __init__(self, max_distance: float = 60.0, max_missing: int = 10, min_iou: float = 0.01):
+    def __init__(
+        self,
+        max_distance: float = 60.0,
+        max_missing: int = 10,
+        min_iou: float = 0.01,
+        min_appearance_similarity: float = 0.2,
+        appearance_weight: float = 0.35,
+        embedding_momentum: float = 0.8,
+    ):
         self.max_distance = float(max_distance)
         self.max_missing = int(max_missing)
         self.min_iou = float(min_iou)
+        self.min_appearance_similarity = float(min_appearance_similarity)
+        self.appearance_weight = float(np.clip(appearance_weight, 0.0, 1.0))
+        self.embedding_momentum = float(np.clip(embedding_momentum, 0.0, 1.0))
         self.tracks: Dict[int, Track] = {}
         self.next_track_id = 1
 
@@ -248,6 +337,7 @@ class SortTracker:
         class_name: str,
         confidence: float,
         world_point: Optional[np.ndarray],
+        appearance_embedding: Optional[np.ndarray],
     ) -> Track:
         track = Track(
             track_id=self.next_track_id,
@@ -257,13 +347,31 @@ class SortTracker:
             confidence=float(confidence),
             kalman=KalmanFilterBBoxCV(bbox),
             world_point=None if world_point is None else np.asarray(world_point, dtype=float),
+            appearance_embedding=None if appearance_embedding is None else np.asarray(appearance_embedding, dtype=float),
             predicted_bbox=np.asarray(bbox, dtype=float),
         )
         self.tracks[track.track_id] = track
         self.next_track_id += 1
         return track
 
-    def update(self, detections: Sequence[dict]) -> List[TrackedDetection]:
+    def _resolve_detection_embeddings(
+        self,
+        detections: Sequence[dict],
+        frame: Optional[np.ndarray],
+    ) -> List[Optional[np.ndarray]]:
+        resolved: List[Optional[np.ndarray]] = []
+        for det in detections:
+            emb = det.get("appearance_embedding")
+            if emb is None:
+                emb = extract_appearance_embedding(frame, det["bbox"])
+            if emb is not None:
+                emb = np.asarray(emb, dtype=float)
+                norm = float(np.linalg.norm(emb))
+                emb = emb / norm if norm > 1e-12 else None
+            resolved.append(emb)
+        return resolved
+
+    def update(self, detections: Sequence[dict], frame: Optional[np.ndarray] = None) -> List[TrackedDetection]:
         if not self.tracks and not detections:
             return []
 
@@ -275,6 +383,7 @@ class SortTracker:
 
         det_bboxes = np.asarray([det["bbox"] for det in detections], dtype=float) if detections else np.empty((0, 4))
         det_z = np.asarray([bbox_to_z(det["bbox"]) for det in detections], dtype=float) if detections else np.empty((0, 4))
+        det_embeddings = self._resolve_detection_embeddings(detections, frame)
 
         matches: List[Tuple[int, int]] = []
         unmatched_tracks = set(range(len(track_ids)))
@@ -286,12 +395,23 @@ class SortTracker:
                 track = self.tracks[track_id]
                 pred_z = bbox_to_z(track.predicted_bbox)
                 for det_idx, det_bbox in enumerate(det_bboxes):
+                    det = detections[det_idx]
+                    if track.class_id != int(det["class_id"]):
+                        continue
                     det_measure = det_z[det_idx]
                     center_distance = np.linalg.norm(pred_z[:2] - det_measure[:2])
                     iou = bbox_iou(track.predicted_bbox, det_bbox)
-                    if center_distance <= self.max_distance and iou >= self.min_iou:
+                    appearance_distance = cosine_distance(track.appearance_embedding, det_embeddings[det_idx])
+                    appearance_similarity = 1.0 - appearance_distance
+                    if (
+                        center_distance <= self.max_distance
+                        and iou >= self.min_iou
+                        and (track.appearance_embedding is None or det_embeddings[det_idx] is None or appearance_similarity >= self.min_appearance_similarity)
+                    ):
                         size_delta = np.linalg.norm(pred_z[2:] - det_measure[2:])
-                        cost_matrix[track_idx, det_idx] = (1.0 - iou) + 0.01 * center_distance + 0.005 * size_delta
+                        motion_cost = (1.0 - iou) + 0.01 * center_distance + 0.005 * size_delta
+                        total_cost = (1.0 - self.appearance_weight) * motion_cost + self.appearance_weight * appearance_distance
+                        cost_matrix[track_idx, det_idx] = total_cost
 
             for track_idx, det_idx in HungarianAssigner.solve(cost_matrix):
                 if cost_matrix[track_idx, det_idx] < 1e5:
@@ -308,6 +428,8 @@ class SortTracker:
                 det["class_name"],
                 det["confidence"],
                 det.get("world_point"),
+                det_embeddings[det_idx],
+                self.embedding_momentum,
             )
 
         stale_ids = []
@@ -326,6 +448,7 @@ class SortTracker:
                 det["class_name"],
                 det["confidence"],
                 det.get("world_point"),
+                det_embeddings[det_idx],
             )
 
         outputs: List[TrackedDetection] = []
