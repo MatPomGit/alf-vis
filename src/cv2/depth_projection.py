@@ -13,6 +13,7 @@ def bbox_to_3d(bbox, depth_frame, rs_device):
     x1, y1, x2, y2 = bbox
     cx = int(round((x1 + x2) / 2.0))
     cy = int(round((y1 + y2) / 2.0))
+    print("fdhgfjhgj")
 
     point = rs_device.deproject(cx, cy, depth_frame)
     if point is None:
