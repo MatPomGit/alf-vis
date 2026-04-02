@@ -1,31 +1,108 @@
 """Launcher GUI for the alf-vis script collection.
 
 Tkinter window with buttons to run the main project scripts.
-Version: 1.2
+Version: 2.0
 """
 
+import os
+import shutil
 import subprocess
 import sys
 import tkinter as tk
-from tkinter import messagebox, PhotoImage
+from tkinter import PhotoImage, messagebox
 
-_VERSION = "1.2"
+_VERSION = "2.0"
 
-# Paths to runnable scripts
-_C1 = "experimental/image_acquisition/main.py"
-_C2 = "experimental/image_acquisition/tracker.py"
-_C3 = "experimental/image_acquisition/visualize.py"
+# ---------------------------------------------------------------------------
+# Script catalogue
+# (path, short description shown in button, long tooltip shown on hover)
+# ---------------------------------------------------------------------------
+_DEMOS = [
+    (
+        "experimental/demo_basic_tracking/main.py",
+        "Podstawowy tracking (ByteTrack + YOLO)",
+        "Detekcja YOLO + tracker ByteTrack 2-D; każdy obiekt otrzymuje unikalny ID.",
+    ),
+    (
+        "experimental/demo_realsense_pipeline/main.py",
+        "Potok RealSense + eksport CSV",
+        "Kompletny potok RealSense: akwizycja RGB+głębia, SORT tracker, eksport CSV.",
+    ),
+    (
+        "experimental/demo_3d_world_map/main.py",
+        "Mapa 3-D głębi + stub SLAM",
+        "Projekcja punktów 3-D z RealSense, budowa mapy świata, stub ORB-SLAM3.",
+    ),
+    (
+        "experimental/demo_apriltag_fusion/main.py",
+        "Fuzja AprilTag + YOLO + Kalman 3-D",
+        "Markery AprilTag wyznaczają pozycję kamery; trajektoria filtrowana Kalmanem.",
+    ),
+    (
+        "experimental/demo_yolo_utils/camera_yolo.py",
+        "Narzędzia preprocessingu NCHW",
+        "Bilinear resize dla tensorów NCHW w czystym NumPy — bez cv2.",
+    ),
+    (
+        "experimental/fast_camera/main.py",
+        "Fast Camera – przetwarzanie w czasie rzeczywistym",
+        "Minimalny czas odpowiedzi: wątki producent/konsument, kolejka głębokości 1, imgsz=320.",
+    ),
+]
 
-_C4 = "src/image_analysis/calibration.py"
-_C5 = "src/image_analysis/camera.py"
-_C6 = "src/image_analysis/viewer.py"
-_C7 = "src/image_analysis/map_visualizer.py"
+_LIBRARY = [
+    (
+        "src/image_analysis/calibration.py",
+        "Kalibracja kamery",
+        "Wyznaczanie macierzy kamery i współczynników dystorsji.",
+    ),
+    (
+        "src/image_analysis/camera.py",
+        "Obsługa kamery",
+        "Abstrakcja strumienia obrazu z kamery USB / pliku wideo.",
+    ),
+    (
+        "src/image_analysis/viewer.py",
+        "Podgląd obrazu RGB + głębia",
+        "Renderowanie podglądu RGB i fałszywokolorowej mapy głębi side-by-side.",
+    ),
+    (
+        "src/image_analysis/map_visualizer.py",
+        "Wizualizacja mapy",
+        "Wyświetlanie mapy 2-D / top-view ze ścieżkami obiektów.",
+    ),
+]
+
+
+def _find_python() -> list[str]:
+    """Return a command prefix that points to a suitable Python interpreter.
+
+    Tries in order:
+    1. Active Conda environment (``CONDA_PREFIX``).
+    2. Current interpreter (``sys.executable``).
+    """
+    conda_prefix = os.environ.get("CONDA_PREFIX")
+    if conda_prefix:
+        for candidate in (
+            os.path.join(conda_prefix, "bin", "python"),
+            os.path.join(conda_prefix, "python.exe"),
+        ):
+            if os.path.isfile(candidate):
+                return [candidate]
+
+    # Try to activate the base Conda environment if conda is on PATH
+    conda_exe = shutil.which("conda")
+    if conda_exe:
+        return [conda_exe, "run", "--no-capture-output", "-n", "base", sys.executable]
+
+    return [sys.executable]
 
 
 def run_script(path: str) -> None:
-    """Launch *path* as a subprocess."""
+    """Launch *path* as a subprocess using the best available Python."""
     try:
-        subprocess.Popen([sys.executable, path])
+        cmd = _find_python() + [path]
+        subprocess.Popen(cmd)
     except Exception as exc:
         messagebox.showerror("Błąd", str(exc))
 
@@ -77,6 +154,20 @@ class ToolTip:
             self.tip = None
 
 
+def _add_section(frm: tk.Frame, title: str, entries: list[tuple[str, str, str]]) -> None:
+    """Add a labelled group of script-launch buttons to *frm*."""
+    tk.Label(frm, text=title, font=("Arial", 10, "bold")).pack(pady=(8, 3))
+    for path, label, tooltip in entries:
+        btn = tk.Button(
+            frm,
+            text=label,
+            anchor="w",
+            command=lambda p=path: run_script(p),
+        )
+        btn.pack(fill="x", pady=2)
+        ToolTip(btn, tooltip)
+
+
 def main() -> None:
     """Build and run the launcher window."""
     root = tk.Tk()
@@ -91,28 +182,10 @@ def main() -> None:
     frm = tk.Frame(root, padx=10, pady=10)
     frm.pack()
 
-    tk.Label(frm, text="Wersja 1").pack(pady=(0, 5))
-    for path, tip in (
-        (_C1, "Uruchamia główny skrypt akwizycji obrazu"),
-        (_C2, "Uruchamia tracker"),
-        (_C3, "Uruchamia wizualizację"),
-    ):
-        btn = tk.Button(frm, text=path, command=lambda p=path: run_script(p))
-        btn.pack(fill="x", pady=2)
-        ToolTip(btn, tip)
+    _add_section(frm, "Programy demonstracyjne", _DEMOS)
+    _add_section(frm, "Biblioteka image_analysis", _LIBRARY)
 
-    tk.Label(frm, text="Wersja 2").pack(pady=(10, 5))
-    for path, tip in (
-        (_C4, "Kalibracja kamery"),
-        (_C5, "Obsługa kamery"),
-        (_C6, "Podgląd obrazu"),
-        (_C7, "Wizualizacja mapy"),
-    ):
-        btn = tk.Button(frm, text=path, command=lambda p=path: run_script(p))
-        btn.pack(fill="x", pady=2)
-        ToolTip(btn, tip)
-
-    tk.Button(frm, text="Zamknij okno", command=root.destroy).pack(pady=(20, 0))
+    tk.Button(frm, text="Zamknij okno", command=root.destroy).pack(pady=(16, 0))
 
     tk.Label(
         root,
@@ -127,3 +200,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

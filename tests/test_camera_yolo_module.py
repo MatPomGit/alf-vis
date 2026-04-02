@@ -1,4 +1,4 @@
-"""Tests for experimental/yolo/camera_yolo.py utility module."""
+"""Tests for experimental/demo_yolo_utils/camera_yolo.py utility module."""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 
 
-MODULE_PATH = Path(__file__).resolve().parents[1] / "experimental" / "yolo" / "camera_yolo.py"
+MODULE_PATH = Path(__file__).resolve().parents[1] / "experimental" / "demo_yolo_utils" / "camera_yolo.py"
 
 
 def _load_module():

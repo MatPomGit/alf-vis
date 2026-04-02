@@ -10,6 +10,7 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
+import cv2
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -125,14 +126,21 @@ def draw_bounding_boxes(
     detections: list[Detection],
     color: tuple[int, int, int] = (0, 255, 0),
     thickness: int = 2,
+    label_color: tuple[int, int, int] = (0, 0, 255),
+    font_scale: float = 0.75,
 ) -> np.ndarray:
     """Draw bounding boxes and labels onto a copy of *image*.
+
+    Labels are rendered in red above the bounding box by default.
 
     Args:
         image: BGR image array with shape ``(H, W, 3)``, dtype ``uint8``.
         detections: Detections to draw.
         color: BGR colour for the bounding box rectangle.
         thickness: Line thickness in pixels.
+        label_color: BGR colour for the text label drawn above the box.
+            Defaults to red ``(0, 0, 255)``.
+        font_scale: Font scale factor for the label text.
 
     Returns:
         Copy of *image* with bounding boxes and labels drawn.
@@ -158,6 +166,18 @@ def draw_bounding_boxes(
         output[max(y2 - t, y1) : y2, x1:x2] = color
         output[y1:y2, x1 : min(x1 + t, x2)] = color
         output[y1:y2, max(x2 - t, x1) : x2] = color
+
+        label = f"{det.label} {det.confidence:.2f}"
+        label_y = max(y1 - 6, 18)
+        cv2.putText(
+            output,
+            label,
+            (x1, label_y),
+            cv2.FONT_HERSHEY_SIMPLEX,
+            font_scale,
+            label_color,
+            t,
+        )
 
     return output
 
