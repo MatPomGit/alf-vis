@@ -21,9 +21,9 @@ def draw_detection(frame, tracked):
         label,
         (x1, max(20, y1 - 8)),
         cv2.FONT_HERSHEY_SIMPLEX,
-        0.45,
-        (0, 255, 0),
-        1,
+        0.65,
+        (0, 0, 255),
+        2,
         cv2.LINE_AA,
     )
 

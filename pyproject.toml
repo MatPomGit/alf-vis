@@ -7,7 +7,7 @@ name = "image-analysis"
 version = "0.1.0"
 description = "Template for Python image analysis projects"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
 license = { file = "LICENSE" }
 dependencies = [
     "numpy>=1.26",
@@ -45,6 +45,15 @@ all = [
     "ultralytics>=8.0",
     "open3d>=0.17",
 ]
+# Experimental demos – all dependencies needed to run programs in experimental/
+experimental = [
+    "ultralytics>=8.0",
+    "pupil-apriltags>=1.0",
+    "pyrealsense2>=2.50",
+    "open3d>=0.17",
+    "pandas>=1.5",
+    "matplotlib>=3.6",
+]
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -54,7 +63,7 @@ where = ["src"]
 # ---------------------------------------------------------------------------
 [tool.ruff]
 line-length = 99
-target-version = "py311"
+target-version = "py310"
 
 [tool.ruff.lint]
 select = [
@@ -82,7 +91,7 @@ quote-style = "double"
 # mypy – static type checking
 # ---------------------------------------------------------------------------
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.10"
 strict = true
 warn_return_any = true
 warn_unused_configs = true

@@ -71,7 +71,7 @@ while True:
             writer.writerow([frame_id, t.id, x, y, z])
 
             cv2.putText(frame, f"{t.id}: {x:.2f},{y:.2f}",
-                        (10,30+20*t.id), 0, 0.6, (0,255,0), 2)
+                        (10,30+20*t.id), 0, 0.8, (0, 0, 255), 2)
 
     cv2.imshow("Tracking 3D", frame)
 
