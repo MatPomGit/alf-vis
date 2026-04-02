@@ -176,7 +176,7 @@ def draw_bounding_boxes(
             cv2.FONT_HERSHEY_SIMPLEX,
             font_scale,
             label_color,
-            2,
+            t,
         )
 
     return output
