@@ -31,6 +31,8 @@ from enum import Enum, auto
 import cv2
 import numpy as np
 
+from image_analysis.utils import validate_bgr as _validate_bgr
+
 logger = logging.getLogger(__name__)
 
 
@@ -315,18 +317,3 @@ def detect_all_markers(
 
     logger.debug("Total markers detected: %d.", len(results))
     return results
-
-
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
-
-def _validate_bgr(image: np.ndarray) -> None:
-    """Validate that *image* is a 3-channel BGR uint8 array."""
-    if not isinstance(image, np.ndarray):
-        raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
-    if image.ndim != 3 or image.shape[2] != 3:
-        raise ValueError(
-            f"Expected 3-channel BGR image (H, W, 3), got shape {image.shape}"
-        )

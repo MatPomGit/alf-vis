@@ -1,6 +1,0 @@
-ultralytics
-opencv-python
-numpy
-pupil-apriltags
-matplotlib
-pandas
