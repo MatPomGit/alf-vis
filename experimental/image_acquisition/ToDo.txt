@@ -1,0 +1,22 @@
+
+Instalacja:
+pip install -r requirements.txt
+
+Tracking + zapis trajektorii:
+python main.py
+
+Wizualizacja:
+python visualize.py
+
+Uwagi techniczne:
+Gating: próg ustawiony na ~9 (3D, kompromis między odrzucaniem outlierów a utrzymaniem tracków)
+Adaptive R: obecnie uproszczone (stałe 0.9 dla stabilności — możesz podać realne box.conf)
+Fuzja markerów: ważona decision_margin
+CSV: frame, id, x, y, z
+
+
+
+Jeśli potrzebujesz kolejnego kroku, sensowne rozszerzenia to:
+pełna trajektoria 3D obiektów (nie tylko względem markerów),
+wizualizacja w czasie rzeczywistym (Open3D),
+synchronizacja z ROS2 TF. 

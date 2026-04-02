@@ -23,7 +23,14 @@ data/processed/*
 models/*
 !data/raw/.gitkeep
 !data/processed/.gitkeep
+!data/processed/*.csv
 !models/.gitkeep
+
+# Wytrenowane modele ML (pobierz w czasie wykonania)
+*.pt
+*.pth
+*.onnx
+*.tflite
 
 # Notatniki Jupyter – checkpointy
 .ipynb_checkpoints/

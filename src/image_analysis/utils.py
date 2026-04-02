@@ -106,3 +106,21 @@ def list_images(
     if not path.is_dir():
         raise NotADirectoryError(f"Not a directory: {path}")
     return sorted(p for p in path.iterdir() if p.suffix.lower() in extensions)
+
+
+def validate_bgr(image: np.ndarray) -> None:
+    """Validate that *image* is a 3-channel BGR uint8 array.
+
+    Args:
+        image: Array to validate.
+
+    Raises:
+        TypeError: If *image* is not a ``np.ndarray``.
+        ValueError: If *image* is not a 3-channel array of shape ``(H, W, 3)``.
+    """
+    if not isinstance(image, np.ndarray):
+        raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
+    if image.ndim != 3 or image.shape[2] != 3:
+        raise ValueError(
+            f"Expected 3-channel BGR image (H, W, 3), got shape {image.shape}"
+        )
