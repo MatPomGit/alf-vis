@@ -10,6 +10,8 @@ jobs:
   test:
     name: Lint · Type-check · Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     strategy:
       matrix:
