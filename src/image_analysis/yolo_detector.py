@@ -96,11 +96,10 @@ class YoloDetector:
             FileNotFoundError: If a custom weights path does not exist.
         """
         try:
-            from ultralytics import YOLO  # type: ignore[import-untyped]
+            from ultralytics import YOLO
         except ImportError as exc:
             raise ImportError(
-                "YOLO detection requires 'ultralytics'. "
-                "Install it with: pip install ultralytics"
+                "YOLO detection requires 'ultralytics'. Install it with: pip install ultralytics"
             ) from exc
 
         weights = self._config.weights
@@ -139,9 +138,7 @@ class YoloDetector:
         if not isinstance(image, np.ndarray):
             raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
         if not self.is_loaded or self._model is None:
-            raise RuntimeError(
-                "YOLO model is not loaded. Call YoloDetector.load() first."
-            )
+            raise RuntimeError("YOLO model is not loaded. Call YoloDetector.load() first.")
 
         conf = confidence if confidence is not None else self._config.confidence
         nms_iou = iou if iou is not None else self._config.iou
@@ -184,9 +181,7 @@ def _parse_ultralytics_results(results: list[object]) -> list[Detection]:
             cls_id = int(box.cls[0])
             label = names.get(cls_id, str(cls_id))
             bbox = (int(xyxy[0]), int(xyxy[1]), int(xyxy[2]), int(xyxy[3]))
-            detections.append(
-                Detection(label=label, confidence=conf, bbox=bbox)
-            )
+            detections.append(Detection(label=label, confidence=conf, bbox=bbox))
     return detections
 
 

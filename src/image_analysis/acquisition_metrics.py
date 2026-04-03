@@ -33,18 +33,17 @@ from __future__ import annotations
 import logging
 from dataclasses import dataclass
 
-import cv2
 import numpy as np
 
 logger = logging.getLogger(__name__)
 
 # Default quality thresholds (conservative, adjust per deployment).
-DEFAULT_MIN_BLUR_SCORE: float = 100.0      # Laplacian variance
-DEFAULT_MIN_BRIGHTNESS: float = 30.0       # YCrCb Y-channel mean
+DEFAULT_MIN_BLUR_SCORE: float = 100.0  # Laplacian variance
+DEFAULT_MIN_BRIGHTNESS: float = 30.0  # YCrCb Y-channel mean
 DEFAULT_MAX_BRIGHTNESS: float = 220.0
-DEFAULT_MIN_CONTRAST: float = 10.0        # Y-channel std
+DEFAULT_MIN_CONTRAST: float = 10.0  # Y-channel std
 DEFAULT_MAX_REPROJECTION_ERROR: float = 1.0  # pixels
-DEFAULT_MIN_DEPTH_COVERAGE: float = 0.5   # fraction of valid pixels
+DEFAULT_MIN_DEPTH_COVERAGE: float = 0.5  # fraction of valid pixels
 
 
 @dataclass
@@ -123,6 +122,8 @@ def compute_blur_score(image: np.ndarray) -> float:
     """
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
+    import cv2
+
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim == 3 else image
     return float(cv2.Laplacian(gray, cv2.CV_64F).var())
 
@@ -146,9 +147,9 @@ def compute_brightness_contrast(
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
     if image.ndim != 3 or image.shape[2] != 3:
-        raise ValueError(
-            f"Expected 3-channel BGR image (H, W, 3), got shape {image.shape}"
-        )
+        raise ValueError(f"Expected 3-channel BGR image (H, W, 3), got shape {image.shape}")
+    import cv2
+
     ycrcb = cv2.cvtColor(image, cv2.COLOR_BGR2YCrCb)
     y_channel = ycrcb[:, :, 0].astype(np.float32)
     return float(y_channel.mean()), float(y_channel.std())
@@ -171,6 +172,8 @@ def estimate_noise_std(image: np.ndarray) -> float:
     """
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
+    import cv2
+
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim == 3 else image
     blurred = cv2.GaussianBlur(gray.astype(np.float32), (5, 5), 0)
     residuals = gray.astype(np.float32) - blurred
@@ -354,9 +357,7 @@ class AcquisitionMonitor:
         mean_bright = float(np.mean([m.brightness for m in self._metrics]))
         mean_cov = float(np.mean([m.depth_coverage for m in self._metrics]))
         reproj_vals = [
-            m.reprojection_error
-            for m in self._metrics
-            if np.isfinite(m.reprojection_error)
+            m.reprojection_error for m in self._metrics if np.isfinite(m.reprojection_error)
         ]
         mean_reproj = float(np.mean(reproj_vals)) if reproj_vals else float("nan")
 

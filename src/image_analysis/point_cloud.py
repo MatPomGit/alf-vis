@@ -45,8 +45,8 @@ class PointCloud:
             normalised to ``[0.0, 1.0]``.
     """
 
-    points: np.ndarray   # (N, 3), float64
-    colors: np.ndarray   # (N, 3), float32
+    points: np.ndarray  # (N, 3), float64
+    colors: np.ndarray  # (N, 3), float32
 
     def __len__(self) -> int:
         return int(self.points.shape[0])
@@ -137,7 +137,10 @@ def create_point_cloud(
 
     logger.debug(
         "Created point cloud with %d points from %dx%d image (stride=%d).",
-        len(points), h, w, s,
+        len(points),
+        h,
+        w,
+        s,
     )
     return PointCloud(points=points, colors=colors_rgb)
 
@@ -172,11 +175,10 @@ def filter_point_cloud(
 
     if statistical:
         try:
-            import open3d as o3d  # type: ignore[import-untyped]
+            import open3d as o3d
         except ImportError as exc:
             raise ImportError(
-                "Statistical filtering requires 'open3d'. "
-                "Install it with: pip install open3d"
+                "Statistical filtering requires 'open3d'. Install it with: pip install open3d"
             ) from exc
 
         pcd = o3d.geometry.PointCloud()
@@ -216,11 +218,10 @@ def save_point_cloud_ply(cloud: PointCloud, path: str) -> None:
         IOError: If the file cannot be written.
     """
     try:
-        import open3d as o3d  # type: ignore[import-untyped]
+        import open3d as o3d
     except ImportError as exc:
         raise ImportError(
-            "save_point_cloud_ply requires 'open3d'. "
-            "Install it with: pip install open3d"
+            "save_point_cloud_ply requires 'open3d'. Install it with: pip install open3d"
         ) from exc
 
     pcd = o3d.geometry.PointCloud()
@@ -251,11 +252,10 @@ def load_point_cloud_ply(path: str) -> PointCloud:
         raise FileNotFoundError(f"PLY file not found: {path}")
 
     try:
-        import open3d as o3d  # type: ignore[import-untyped]
+        import open3d as o3d
     except ImportError as exc:
         raise ImportError(
-            "load_point_cloud_ply requires 'open3d'. "
-            "Install it with: pip install open3d"
+            "load_point_cloud_ply requires 'open3d'. Install it with: pip install open3d"
         ) from exc
 
     pcd = o3d.io.read_point_cloud(path)

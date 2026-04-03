@@ -113,9 +113,7 @@ class SlamMap:
     """
 
     keyframes: list[SlamKeyframe] = field(default_factory=list)
-    map_points: np.ndarray = field(
-        default_factory=lambda: np.empty((0, 3), dtype=np.float64)
-    )
+    map_points: np.ndarray = field(default_factory=lambda: np.empty((0, 3), dtype=np.float64))
     trajectory: list[np.ndarray] = field(default_factory=list)
     is_lost: bool = False
 

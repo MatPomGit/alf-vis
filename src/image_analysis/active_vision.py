@@ -145,7 +145,7 @@ class ActiveVisionOptimizer:
         dx = abs(cx - (width * 0.5)) / max(width * 0.5, 1.0)
         dy = abs(cy - (height * 0.5)) / max(height * 0.5, 1.0)
         # Prefer non-central areas slightly to encourage exploration.
-        return min(1.0, np.hypot(dx, dy))
+        return float(min(1.0, np.hypot(dx, dy)))
 
     def _stability_score(
         self, roi: RegionOfInterest, previous_roi: RegionOfInterest | None
@@ -156,21 +156,23 @@ class ActiveVisionOptimizer:
         px, py = previous_roi.center
         distance = np.hypot(cx - px, cy - py)
         normaliser = max(np.hypot(previous_roi.width, previous_roi.height), 1.0)
-        return 1.0 - min(1.0, distance / normaliser)
+        return float(1.0 - min(1.0, distance / normaliser))
 
-    def _uncertainty_score(self, roi: RegionOfInterest, uncertainty_map: np.ndarray | None) -> float:
+    def _uncertainty_score(
+        self, roi: RegionOfInterest, uncertainty_map: np.ndarray | None
+    ) -> float:
         if uncertainty_map is None:
             return 0.0
         if uncertainty_map.ndim != 2:
-            raise ValueError(
-                f"uncertainty_map must be 2-D, got shape {uncertainty_map.shape}"
-            )
+            raise ValueError(f"uncertainty_map must be 2-D, got shape {uncertainty_map.shape}")
         region = uncertainty_map[roi.y1 : roi.y2, roi.x1 : roi.x2]
         if region.size == 0:
             return 0.0
         return float(np.clip(region.mean(), 0.0, 1.0))
 
-    def _candidate_from_detection(self, det: Detection, width: int, height: int) -> RegionOfInterest:
+    def _candidate_from_detection(
+        self, det: Detection, width: int, height: int
+    ) -> RegionOfInterest:
         x1, y1, x2, y2 = det.bbox
         box_w = max(1, x2 - x1)
         box_h = max(1, y2 - y1)

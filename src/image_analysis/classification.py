@@ -47,9 +47,7 @@ def classify_image(
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
     if not (0.0 <= confidence_threshold <= 1.0):
-        raise ValueError(
-            f"confidence_threshold must be in [0.0, 1.0], got {confidence_threshold}"
-        )
+        raise ValueError(f"confidence_threshold must be in [0.0, 1.0], got {confidence_threshold}")
 
     # TODO(#issue-number): Replace stub with actual model inference.
     label: str = "unknown"

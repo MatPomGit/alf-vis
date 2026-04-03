@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import logging
 
-import cv2
 import numpy as np
 
 from image_analysis.utils import validate_bgr as _validate_bgr
@@ -32,7 +31,8 @@ from image_analysis.utils import validate_bgr as _validate_bgr
 logger = logging.getLogger(__name__)
 
 # Default colormap for depth visualisation.
-DEFAULT_DEPTH_COLORMAP: int = cv2.COLORMAP_JET
+# Numeric value of cv2.COLORMAP_JET; avoids a module-level cv2 import.
+DEFAULT_DEPTH_COLORMAP: int = 2
 
 # Clamp depth range for false-colour display (metres).
 DEPTH_MIN_M: float = 0.1
@@ -59,11 +59,11 @@ def render_rgb(
         ValueError: If *image* is not a 3-channel BGR array.
     """
     _validate_bgr(image)
-    out = image.copy()
+    out: np.ndarray = image.copy()
     if label:
-        cv2.putText(
-            out, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, label_color, 2
-        )
+        import cv2
+
+        cv2.putText(out, label, (10, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, label_color, 2)
     return out
 
 
@@ -105,6 +105,8 @@ def render_depth(
     )
 
     uint8_depth = (normalised * 255).astype(np.uint8)
+    import cv2
+
     coloured = cv2.applyColorMap(uint8_depth, colormap)
     # Black out invalid pixels.
     coloured[~valid_mask] = 0
@@ -143,6 +145,8 @@ def render_rgbd_side_by_side(
     if depth_vis.shape[0] != target_h:
         scale = target_h / depth_vis.shape[0]
         new_w = int(depth_vis.shape[1] * scale)
+        import cv2
+
         depth_vis = cv2.resize(depth_vis, (new_w, target_h), interpolation=cv2.INTER_LINEAR)
 
     return np.concatenate([rgb, depth_vis], axis=1)
@@ -170,6 +174,8 @@ def show_image(
     """
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
+    import cv2
+
     cv2.imshow(window_name, image)
     return cv2.waitKey(wait_ms) & 0xFF
 
@@ -190,6 +196,8 @@ def encode_jpeg(image: np.ndarray, quality: int = 80) -> bytes:
     """
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
+    import cv2
+
     ok, buf = cv2.imencode(".jpg", image, [cv2.IMWRITE_JPEG_QUALITY, quality])
     if not ok:
         raise RuntimeError("JPEG encoding failed.")

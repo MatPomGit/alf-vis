@@ -128,9 +128,7 @@ class MapVisualizer:
             target=self._render_loop, daemon=True, name="map-visualizer"
         )
         self._thread.start()
-        logger.info(
-            "Map visualiser started (backend='%s').", self._config.backend
-        )
+        logger.info("Map visualiser started (backend='%s').", self._config.backend)
 
     def stop(self) -> None:
         """Stop the visualisation window and join the background thread."""
@@ -231,6 +229,4 @@ class VisualizerSnapshot:
     timestamp_s: float = 0.0
     num_points: int = 0
     num_keyframes: int = 0
-    camera_position: tuple[float, float, float] = field(
-        default_factory=lambda: (0.0, 0.0, 0.0)
-    )
+    camera_position: tuple[float, float, float] = field(default_factory=lambda: (0.0, 0.0, 0.0))

@@ -28,7 +28,6 @@ import logging
 from dataclasses import dataclass
 from enum import Enum, auto
 
-import cv2
 import numpy as np
 
 from image_analysis.utils import validate_bgr as _validate_bgr
@@ -70,7 +69,8 @@ class MarkerDetection:
 # ---------------------------------------------------------------------------
 
 # Default dictionary used on Unitree G1 EDU.
-ARUCO_DICT_ID: int = cv2.aruco.DICT_4X4_50
+# Numeric value of cv2.aruco.DICT_4X4_50; avoids a module-level cv2 import.
+ARUCO_DICT_ID: int = 0
 
 
 def detect_aruco_markers(
@@ -94,6 +94,8 @@ def detect_aruco_markers(
         ValueError: If *image* is not a 3-channel BGR array.
     """
     _validate_bgr(image)
+
+    import cv2
 
     aruco_dict = cv2.aruco.getPredefinedDictionary(dictionary_id)
     params = cv2.aruco.DetectorParameters()
@@ -149,12 +151,14 @@ def detect_apriltag_markers(
     _validate_bgr(image)
 
     try:
-        import pupil_apriltags as apriltag  # type: ignore[import-untyped]
+        import pupil_apriltags as apriltag
     except ImportError as exc:
         raise ImportError(
             "AprilTag detection requires 'pupil-apriltags'. "
             "Install it with: pip install pupil-apriltags"
         ) from exc
+
+    import cv2
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     detector = apriltag.Detector(families=families)
@@ -203,16 +207,18 @@ def detect_cctag_markers(image: np.ndarray) -> list[MarkerDetection]:
     _validate_bgr(image)
 
     try:
-        import cctag  # type: ignore[import-untyped]
+        import cctag
     except ImportError as exc:
         raise ImportError(
             "CCTag detection requires the 'cctag' Python bindings. "
             "See https://github.com/alicevision/CCTag for build instructions."
         ) from exc
 
+    import cv2
+
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     # TODO(#markers): Adapt the API call to the installed cctag version.
-    results = cctag.detect(gray)  # type: ignore[attr-defined]
+    results = cctag.detect(gray)
 
     detections: list[MarkerDetection] = [
         MarkerDetection(
@@ -250,6 +256,8 @@ def detect_qr_codes(image: np.ndarray) -> list[MarkerDetection]:
         ValueError: If *image* is not a 3-channel BGR array.
     """
     _validate_bgr(image)
+
+    import cv2
 
     detector = cv2.QRCodeDetector()
     ok, decoded_list, points_array, _ = detector.detectAndDecodeMulti(image)

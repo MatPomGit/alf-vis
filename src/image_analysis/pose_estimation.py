@@ -102,10 +102,7 @@ def estimate_pose_from_marker(
     half = marker_size_m / 2.0
     # Object points in marker-local frame (Z = 0 plane, centred at origin).
     obj_pts = np.array(
-        [[-half, half, 0.0],
-         [half, half, 0.0],
-         [half, -half, 0.0],
-         [-half, -half, 0.0]],
+        [[-half, half, 0.0], [half, half, 0.0], [half, -half, 0.0], [-half, -half, 0.0]],
         dtype=np.float64,
     )
 
@@ -120,9 +117,7 @@ def estimate_pose_from_marker(
     )
 
     if not ok:
-        raise ValueError(
-            f"solvePnP failed for marker id={marker.marker_id}."
-        )
+        raise ValueError(f"solvePnP failed for marker id={marker.marker_id}.")
 
     return Pose3D(rvec=rvec, tvec=tvec)
 
@@ -254,14 +249,10 @@ def draw_pose_axes(
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
 
-    out = image.copy()
-    axis_pts = (
-        np.float32(
-            [[0, 0, 0],
-             [axis_length_m, 0, 0],
-             [0, axis_length_m, 0],
-             [0, 0, axis_length_m]]
-        )
+    out: np.ndarray = image.copy()
+    axis_pts = np.array(
+        [[0, 0, 0], [axis_length_m, 0, 0], [0, axis_length_m, 0], [0, 0, axis_length_m]],
+        dtype=np.float32,
     )
 
     projected, _ = cv2.projectPoints(

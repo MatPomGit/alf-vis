@@ -63,9 +63,7 @@ def validate_image(image: np.ndarray) -> None:
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
     if image.ndim == 3 and image.shape[2] not in (1, 3, 4):
-        raise ValueError(
-            f"3-D image must have 1, 3, or 4 channels, got {image.shape[2]}"
-        )
+        raise ValueError(f"3-D image must have 1, 3, or 4 channels, got {image.shape[2]}")
     if image.ndim not in (2, 3):
         raise ValueError(f"Image must be 2-D or 3-D, got {image.ndim}-D")
     if image.dtype not in (np.uint8, np.float32):
@@ -121,6 +119,4 @@ def validate_bgr(image: np.ndarray) -> None:
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
     if image.ndim != 3 or image.shape[2] != 3:
-        raise ValueError(
-            f"Expected 3-channel BGR image (H, W, 3), got shape {image.shape}"
-        )
+        raise ValueError(f"Expected 3-channel BGR image (H, W, 3), got shape {image.shape}")

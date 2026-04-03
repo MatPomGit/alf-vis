@@ -77,8 +77,7 @@ def compute_center_offset(
     """
     if image_width <= 0 or image_height <= 0:
         raise ValueError(
-            f"image_width and image_height must be positive, "
-            f"got {image_width}x{image_height}"
+            f"image_width and image_height must be positive, got {image_width}x{image_height}"
         )
 
     x1, y1, x2, y2 = detection.bbox
@@ -124,9 +123,7 @@ def compute_offsets(
     Raises:
         ValueError: If *image_width* or *image_height* is not positive.
     """
-    return [
-        compute_center_offset(d, image_width, image_height) for d in detections
-    ]
+    return [compute_center_offset(d, image_width, image_height) for d in detections]
 
 
 def get_most_centered(offsets: list[TargetOffset]) -> TargetOffset | None:
@@ -168,11 +165,9 @@ def draw_crosshair(
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
     if image.ndim != 3 or image.shape[2] != 3:
-        raise ValueError(
-            f"Expected 3-channel BGR image (H, W, 3), got shape {image.shape}"
-        )
+        raise ValueError(f"Expected 3-channel BGR image (H, W, 3), got shape {image.shape}")
 
-    out = image.copy()
+    out: np.ndarray = image.copy()
     h, w = out.shape[:2]
     cx, cy = w // 2, h // 2
 
@@ -213,7 +208,7 @@ def draw_target_line(
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
 
-    out = image.copy()
+    out: np.ndarray = image.copy()
     h, w = out.shape[:2]
     cx, cy = w // 2, h // 2
 
@@ -239,8 +234,8 @@ def _draw_line(
     steps = int(max(abs(x1 - x0), abs(y1 - y0), 1))
     t = max(1, thickness)
     for i in range(steps + 1):
-        x = int(round(x0 + (x1 - x0) * i / steps))
-        y = int(round(y0 + (y1 - y0) * i / steps))
+        x = round(x0 + (x1 - x0) * i / steps)
+        y = round(y0 + (y1 - y0) * i / steps)
         if 0 <= x < w and 0 <= y < h:
             y0c = max(0, y - t // 2)
             y1c = min(h, y + (t + 1) // 2)
