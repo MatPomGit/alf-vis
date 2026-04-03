@@ -6,7 +6,6 @@ Import specific functionality directly from submodules, e.g.
 `from image_analysis.detection import Detection`.
 """
 
-
 __all__ = [
     "KalmanMultiObjectTracker",
     "TrackedObject",

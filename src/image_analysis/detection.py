@@ -61,9 +61,7 @@ def detect_objects(
     """
     _validate_bgr_image(image)
     if not (0.0 <= confidence_threshold <= 1.0):
-        raise ValueError(
-            f"confidence_threshold must be in [0.0, 1.0], got {confidence_threshold}"
-        )
+        raise ValueError(f"confidence_threshold must be in [0.0, 1.0], got {confidence_threshold}")
 
     # TODO(#issue-number): Replace stub with actual model inference.
     raw_detections: list[Detection] = []
@@ -150,7 +148,7 @@ def draw_bounding_boxes(
         ValueError: If *image* is not a 3-channel BGR array.
     """
     _validate_bgr_image(image)
-    output = image.copy()
+    output: np.ndarray = image.copy()
 
     h, w = output.shape[:2]
     t = max(1, thickness)

@@ -38,9 +38,9 @@ import numpy as np
 logger = logging.getLogger(__name__)
 
 # RANSAC defaults.
-RANSAC_DISTANCE_THRESHOLD_M: float = 0.02   # 2 cm inlier tolerance
+RANSAC_DISTANCE_THRESHOLD_M: float = 0.02  # 2 cm inlier tolerance
 RANSAC_NUM_ITERATIONS: int = 1000
-RANSAC_MIN_INLIER_RATIO: float = 0.05       # at least 5 % of points
+RANSAC_MIN_INLIER_RATIO: float = 0.05  # at least 5 % of points
 
 # Angle threshold for horizontal / vertical classification (degrees).
 HORIZONTAL_ANGLE_DEG: float = 20.0
@@ -64,13 +64,9 @@ class Plane3D:
 
     normal: np.ndarray  # shape (3,), float64
     d: float
-    inlier_indices: np.ndarray = field(
-        default_factory=lambda: np.empty(0, dtype=np.int64)
-    )
+    inlier_indices: np.ndarray = field(default_factory=lambda: np.empty(0, dtype=np.int64))
     inlier_ratio: float = 0.0
-    centroid: np.ndarray = field(
-        default_factory=lambda: np.zeros(3, dtype=np.float64)
-    )
+    centroid: np.ndarray = field(default_factory=lambda: np.zeros(3, dtype=np.float64))
 
     @property
     def is_horizontal(self) -> bool:
@@ -127,9 +123,7 @@ def fit_plane_ransac(
     if not isinstance(points, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(points).__name__}")
     if points.ndim != 2 or points.shape[1] != 3:
-        raise ValueError(
-            f"points must have shape (N, 3), got {points.shape}"
-        )
+        raise ValueError(f"points must have shape (N, 3), got {points.shape}")
     if len(points) < 3:
         logger.debug("Too few points for plane fitting (%d).", len(points))
         return None
@@ -219,11 +213,10 @@ def segment_plane_open3d(
         raise ValueError(f"points must have shape (N, 3), got {points.shape}")
 
     try:
-        import open3d as o3d  # type: ignore[import-untyped]
+        import open3d as o3d
     except ImportError as exc:
         raise ImportError(
-            "segment_plane_open3d requires 'open3d'. "
-            "Install it with: pip install open3d"
+            "segment_plane_open3d requires 'open3d'. Install it with: pip install open3d"
         ) from exc
 
     pcd = o3d.geometry.PointCloud()

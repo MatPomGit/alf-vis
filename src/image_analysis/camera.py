@@ -21,9 +21,12 @@ import logging
 from collections.abc import Generator
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-import cv2
 import numpy as np
+
+if TYPE_CHECKING:
+    import cv2
 
 logger = logging.getLogger(__name__)
 
@@ -125,18 +128,18 @@ class UnitreeCamera:
                 :attr:`CameraConfig.source`.
         """
         logger.debug("Available cameras: %s", list_available_cameras())
-        
+
         # TODO(#camera): Replace with Unitree SDK2 transport when running on
         # the robot.  For desktop testing, fall back to cv2.VideoCapture.
+        import cv2
+
         self._cap = cv2.VideoCapture(self._config.source)
         self._cap.set(cv2.CAP_PROP_FRAME_WIDTH, self._config.frame_width)
         self._cap.set(cv2.CAP_PROP_FRAME_HEIGHT, self._config.frame_height)
         self._cap.set(cv2.CAP_PROP_FPS, self._config.fps)
 
         if not self._cap.isOpened():
-            raise RuntimeError(
-                f"Failed to open camera source: {self._config.source!r}"
-            )
+            raise RuntimeError(f"Failed to open camera source: {self._config.source!r}")
         logger.info(
             "Camera opened: source=%r  %dx%d @ %d fps",
             self._config.source,
@@ -249,6 +252,8 @@ def list_available_cameras(max_index: int = 8) -> list[int]:
         Sorted list of device indices that can be opened successfully.
     """
     available: list[int] = []
+    import cv2
+
     for idx in range(max_index):
         cap = cv2.VideoCapture(idx)
         if cap.isOpened():
@@ -257,10 +262,13 @@ def list_available_cameras(max_index: int = 8) -> list[int]:
     logger.debug("Available cameras: %s", available)
     return available
 
+
 if __name__ == "__main__":
     config = CameraConfig(source=0)
 
     with UnitreeCamera(config) as cam:
+        import cv2
+
         for frame in cam.stream_rgb():
             cv2.imshow("Camera", frame)
 

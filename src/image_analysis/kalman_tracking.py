@@ -72,16 +72,18 @@ class KalmanBBoxFilter:
 
         pos_noise = max(1e-6, process_noise)
         vel_noise = max(1e-6, process_noise * 4.0)
-        self._q = np.diag([
-            pos_noise,
-            pos_noise,
-            pos_noise,
-            pos_noise,
-            vel_noise,
-            vel_noise,
-            vel_noise,
-            vel_noise,
-        ]).astype(float)
+        self._q = np.diag(
+            [
+                pos_noise,
+                pos_noise,
+                pos_noise,
+                pos_noise,
+                vel_noise,
+                vel_noise,
+                vel_noise,
+                vel_noise,
+            ]
+        ).astype(float)
 
         meas_noise = max(1e-6, measurement_noise)
         self._r = np.eye(4, dtype=float) * meas_noise

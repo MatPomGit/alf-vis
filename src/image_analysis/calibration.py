@@ -30,14 +30,13 @@ import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 
-import cv2
 import numpy as np
 
 logger = logging.getLogger(__name__)
 
 # Default chessboard pattern used in the Unitree G1 EDU calibration kit.
-DEFAULT_BOARD_COLS: int = 9   # inner corners along the horizontal axis
-DEFAULT_BOARD_ROWS: int = 6   # inner corners along the vertical axis
+DEFAULT_BOARD_COLS: int = 9  # inner corners along the horizontal axis
+DEFAULT_BOARD_ROWS: int = 6  # inner corners along the vertical axis
 DEFAULT_SQUARE_SIZE_M: float = 0.025  # square side length in metres
 
 
@@ -99,6 +98,8 @@ def find_chessboard_corners(
     if image.dtype != np.uint8:
         raise ValueError(f"Expected uint8 image, got dtype={image.dtype}")
 
+    import cv2
+
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) if image.ndim == 3 else image
 
     found, corners = cv2.findChessboardCorners(gray, board_size, None)
@@ -110,9 +111,7 @@ def find_chessboard_corners(
         criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 1e-3)
         corners = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
 
-    logger.debug(
-        "Found %d chessboard corners (board_size=%s).", len(corners), board_size  # type: ignore[arg-type]
-    )
+    logger.debug("Found %d chessboard corners (board_size=%s).", len(corners), board_size)
     return True, corners
 
 
@@ -148,17 +147,20 @@ def calibrate_camera(
 
     obj_points = [objp] * len(all_corners)
 
+    import cv2
+
     rms, camera_matrix, dist_coeffs, rvecs, tvecs = cv2.calibrateCamera(
-        obj_points, all_corners, image_size, None, None  # type: ignore[call-overload]
+        obj_points,
+        all_corners,
+        image_size,
+        None,
+        None,  # type: ignore[call-overload]
     )
 
-    logger.info(
-        "Calibration complete: RMS reprojection error = %.4f px", rms
-    )
+    logger.info("Calibration complete: RMS reprojection error = %.4f px", rms)
     if rms > 1.0:
         logger.warning(
-            "High reprojection error (%.4f px > 1.0 px). "
-            "Consider recapturing calibration images.",
+            "High reprojection error (%.4f px > 1.0 px). Consider recapturing calibration images.",
             rms,
         )
 
@@ -189,6 +191,8 @@ def save_calibration(result: CalibrationResult, path: str | Path) -> None:
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
 
+    import cv2
+
     fs = cv2.FileStorage(str(path), cv2.FILE_STORAGE_WRITE)
     fs.write("camera_matrix", result.camera_matrix)
     fs.write("dist_coeffs", result.dist_coeffs)
@@ -216,6 +220,8 @@ def load_calibration(path: str | Path) -> CalibrationResult:
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"Calibration file not found: {path}")
+
+    import cv2
 
     fs = cv2.FileStorage(str(path), cv2.FILE_STORAGE_READ)
     camera_matrix = fs.getNode("camera_matrix").mat()
@@ -260,6 +266,8 @@ def undistort_image(
     if not isinstance(image, np.ndarray):
         raise TypeError(f"Expected np.ndarray, got {type(image).__name__}")
 
+    import cv2
+
     return cv2.undistort(
         image,
         calibration.camera_matrix,
@@ -296,6 +304,8 @@ def compute_reprojection_error(
     objp[:, :2] = np.mgrid[0:cols, 0:rows].T.reshape(-1, 2) * square_size_m
 
     errors: list[float] = []
+    import cv2
+
     for rvec, tvec in zip(result.rvecs, result.tvecs, strict=True):
         projected, _ = cv2.projectPoints(
             objp,

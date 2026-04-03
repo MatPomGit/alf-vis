@@ -89,9 +89,7 @@ def classify_detection(detection: Detection) -> ObjectClass:
     """
     obj_class = YOLO_LABEL_TO_CLASS.get(detection.label.lower(), ObjectClass.UNKNOWN)
     if obj_class is ObjectClass.UNKNOWN:
-        logger.debug(
-            "No class mapping for label '%s'; assigning UNKNOWN.", detection.label
-        )
+        logger.debug("No class mapping for label '%s'; assigning UNKNOWN.", detection.label)
     return obj_class
 
 
