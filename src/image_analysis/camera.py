@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 if TYPE_CHECKING:
-    import cv2 as _cv2_type
+    import cv2
 
 logger = logging.getLogger(__name__)
 
@@ -103,7 +103,7 @@ class UnitreeCamera:
 
     def __init__(self, config: CameraConfig) -> None:
         self._config = config
-        self._cap: _cv2_type.VideoCapture | None = None
+        self._cap: cv2.VideoCapture | None = None
 
     # ------------------------------------------------------------------
     # Context manager
@@ -267,12 +267,12 @@ if __name__ == "__main__":
     config = CameraConfig(source=0)
 
     with UnitreeCamera(config) as cam:
-        import cv2 as _cv2
+        import cv2
 
         for frame in cam.stream_rgb():
-            _cv2.imshow("Camera", frame)
+            cv2.imshow("Camera", frame)
 
-            if _cv2.waitKey(1) & 0xFF == 27:  # ESC
+            if cv2.waitKey(1) & 0xFF == 27:  # ESC
                 break
 
-    _cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
