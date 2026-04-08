@@ -1,5 +1,3 @@
-
-
 pydantic>=2.7
 numpy>=1.26
 opencv-python>=4.9
@@ -7,16 +5,4 @@ open3d>=0.19
 ultralytics>=8.3
 pupil-apriltags>=1.0.4
 PyYAML>=6.0
-
-# Uwaga, pakiety ROS2:
-    # rclpy, 
-    # sensor_msgs, 
-    # geometry_msgs, 
-    # std_msgs, 
-    # cv_bridge, 
-    # sensor_msgs_py, 
-    # rtabmap_msgs
-# powinny być dostarczone przez
-    # dystrybucję ROS2 
-    # lub system pakietów 
-    # lub kontener środowiska robota
+transforms3d>=0.4

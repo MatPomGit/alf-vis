@@ -12,3 +12,4 @@ dependencies:
       - open3d>=0.19
       - ultralytics>=8.3
       - pupil-apriltags>=1.0.4
+      - transforms3d>=0.4

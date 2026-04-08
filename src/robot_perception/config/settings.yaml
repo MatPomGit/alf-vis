@@ -7,6 +7,10 @@ point_cloud_save_threshold: 500
 perception_state_topic: /perception/state
 point_cloud_topic: /perception/point_cloud
 yolo_model_path: yolov8s.pt
+visual_attention_mode: 1
+apriltag_enabled: true
+cctag_enabled: true
+qr_enabled: true
 april_tag_family: tag36h11
 april_tag_size_m: 0.162
 calibration_file: config/camera_calibration.yaml
@@ -14,3 +18,9 @@ rtabmap_odom_topic: /rtabmap/odom_info
 rtabmap_mapdata_topic: /rtabmap/mapData
 rtabmap_localization_topic: /rtabmap/info
 planned_path_y_tolerance: 0.5
+default_camera_source: rgbd
+allow_rgb_fallback: true
+transform_validation_translation_limit_m: 50.0
+transform_validation_rotation_limit_rad: 3.2
+apriltag_reprojection_good_px: 1.5
+apriltag_reprojection_warn_px: 4.0

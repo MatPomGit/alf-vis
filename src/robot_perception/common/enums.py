@@ -1,9 +1,5 @@
 from enum import Enum, auto
-
-# Enum stanów głównej maszyny percepcji
 class PerceptionState(Enum):
-    """Enum stanów głównej maszyny percepcji."""
-
     IDLE = auto()
     CAPTURE_RGBD_FRAME = auto()
     INIT_RTABMAP_BRIDGE = auto()
