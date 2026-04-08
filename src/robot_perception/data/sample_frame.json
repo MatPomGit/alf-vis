@@ -1,0 +1,25 @@
+{
+    "frame_id": 1,
+    "timestamp": 1712345678.123,
+    "image_path": "/tmp/frame_1.png",
+    "image_meta": {
+        "width": 640,
+        "height": 480,
+        "encoding": "bgr8"
+    },
+    "roi": [
+        160,
+        120,
+        320,
+        240
+    ],
+    "visual_markers": [],
+    "human_detected": false,
+    "obstacle_detected": false,
+    "new_objects": [],
+    "tracked_objects": [],
+    "path_deviation_detected": false,
+    "path_deviation_value": 0.0,
+    "slam_pose": null,
+    "slam_map_status": "UNKNOWN"
+}
