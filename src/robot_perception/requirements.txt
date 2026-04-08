@@ -1,0 +1,14 @@
+
+
+pydantic>=2.7
+numpy>=1.26
+opencv-python>=4.9
+open3d>=0.19
+ultralytics>=8.3
+pupil-apriltags>=1.0.4
+PyYAML>=6.0
+
+# Uwaga: rclpy, sensor_msgs, std_msgs, geometry_msgs, cv_bridge 
+# i pakiety ROS2 zwykle instaluje się przez dystrybucję ROS2, a nie przez pip. 
+# To zależy od distro i sposobu provisioningu środowiska. 
+# rclpy jest kanonicznym Python API dla ROS2. (docs.ros.org)

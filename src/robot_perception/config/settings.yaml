@@ -1,0 +1,13 @@
+camera_id: 0
+camera_width: 640
+camera_height: 480
+output_dir: output
+point_cloud_save_threshold: 500
+perception_state_topic: /perception/state
+point_cloud_topic: /perception/point_cloud
+yolo_model_path: yolov8s.pt
+april_tag_family: tag36h11
+rtabmap_database_path: output/rtabmap.db
+rtabmap_launch_package: rtabmap_launch
+rtabmap_launch_file: rtabmap.launch.py
+planned_path_y_tolerance: 0.5
