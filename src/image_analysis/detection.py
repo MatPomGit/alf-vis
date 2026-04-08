@@ -63,8 +63,26 @@ def detect_objects(
     if not (0.0 <= confidence_threshold <= 1.0):
         raise ValueError(f"confidence_threshold must be in [0.0, 1.0], got {confidence_threshold}")
 
-    # TODO(#issue-number): Replace stub with actual model inference.
+    gray = image.mean(axis=2)
+    threshold = float(gray.mean() + 0.5 * gray.std())
+    mask = gray >= threshold
+
+    ys, xs = np.where(mask)
+    image_area = float(image.shape[0] * image.shape[1])
+    min_area = max(25.0, image_area * 0.01)
+
     raw_detections: list[Detection] = []
+    if ys.size > 0 and xs.size > 0:
+        x1 = int(xs.min())
+        x2 = int(xs.max()) + 1
+        y1 = int(ys.min())
+        y2 = int(ys.max()) + 1
+        area = float((x2 - x1) * (y2 - y1))
+        if area >= min_area:
+            confidence = min(1.0, float(mask.mean()) * 2.0)
+            raw_detections.append(
+                Detection(label="foreground", confidence=confidence, bbox=(x1, y1, x2, y2))
+            )
 
     detections = [d for d in raw_detections if d.confidence >= confidence_threshold]
     detections.sort(key=lambda d: d.confidence, reverse=True)

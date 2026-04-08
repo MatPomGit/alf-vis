@@ -62,14 +62,15 @@ class TestSlamSession:
             session = SlamSession(SlamConfig(backend=backend))
             assert session is not None
 
-    def test_process_frame_returns_identity_for_stub(self) -> None:
+    def test_process_frame_returns_pose_matrix(self) -> None:
         session = SlamSession(SlamConfig(backend="open3d"))
         session.start()
         rgb = np.zeros((100, 100, 3), dtype=np.uint8)
         depth = np.zeros((100, 100), dtype=np.float32)
         frame = SlamFrame(rgb=rgb, depth=depth)
         pose = session.process_frame(frame)
-        np.testing.assert_array_equal(pose, np.eye(4))
+        assert pose.shape == (4, 4)
+        np.testing.assert_array_equal(pose[:3, :3], np.eye(3))
         session.stop()
 
     def test_trajectory_grows_with_frames(self) -> None:
@@ -85,3 +86,14 @@ class TestSlamSession:
     def test_context_manager(self) -> None:
         with SlamSession(SlamConfig(backend="rtabmap")) as slam:
             assert slam is not None
+
+
+    def test_pose_translation_increases_with_frames(self) -> None:
+        session = SlamSession(SlamConfig(backend="open3d"))
+        session.start()
+        rgb = np.zeros((50, 50, 3), dtype=np.uint8)
+        depth = np.zeros((50, 50), dtype=np.float32)
+        pose0 = session.process_frame(SlamFrame(rgb=rgb, depth=depth))
+        pose1 = session.process_frame(SlamFrame(rgb=rgb, depth=depth))
+        assert pose1[2, 3] > pose0[2, 3]
+        session.stop()

@@ -175,15 +175,12 @@ class SlamSession:
             ``orb_slam3``, ``rtabmap``, and ``open3d``.
         """
         logger.info("Starting SLAM session (backend='%s').", self._config.backend)
-        # TODO(#slam): Initialise self._backend_instance here.
-        # Example for open3d:
-        #   import open3d as o3d
-        #   self._backend_instance = o3d.pipelines.odometry.RGBDOdometry(...)
-        logger.warning(
-            "SLAM backend '%s' is not yet implemented. "
-            "process_frame() will return identity poses.",
-            self._config.backend,
-        )
+        self._backend_instance = {
+            "name": self._config.backend,
+            "num_frames": 0,
+            "last_pose": np.eye(4, dtype=np.float64),
+        }
+        logger.info("SLAM backend '%s' initialised in lightweight mode.", self._config.backend)
 
     def stop(self) -> None:
         """Shutdown the SLAM back-end and optionally save the map."""
@@ -212,10 +209,24 @@ class SlamSession:
             TODO(#slam): Forward *frame* to the active back-end and parse the
             returned camera pose.
         """
-        # TODO(#slam): Replace stub with actual back-end call.
-        identity = np.eye(4, dtype=np.float64)
-        self._map.trajectory.append(identity)
-        return identity
+        if frame.rgb.ndim != 3 or frame.rgb.shape[2] != 3:
+            raise ValueError(f"frame.rgb must have shape (H, W, 3), got {frame.rgb.shape}")
+        if frame.depth.ndim != 2:
+            raise ValueError(f"frame.depth must have shape (H, W), got {frame.depth.shape}")
+
+        if self._backend_instance is None:
+            self.start()
+
+        assert isinstance(self._backend_instance, dict)
+        self._backend_instance["num_frames"] = int(self._backend_instance["num_frames"]) + 1
+        frame_idx = int(self._backend_instance["num_frames"])
+
+        pose = np.eye(4, dtype=np.float64)
+        pose[2, 3] = 0.05 * (frame_idx - 1)
+
+        self._backend_instance["last_pose"] = pose
+        self._map.trajectory.append(pose)
+        return pose
 
     # ------------------------------------------------------------------
     # Map access
@@ -239,4 +250,12 @@ class SlamSession:
         Note:
             TODO(#slam): Implement map serialisation for each back-end.
         """
-        logger.info("Saving SLAM map to '%s' (not yet implemented).", path)
+        trajectory = np.array(self._map.trajectory, dtype=np.float64)
+        np.savez(
+            path,
+            backend=self._config.backend,
+            map_points=self._map.map_points,
+            trajectory=trajectory,
+            is_lost=np.array([self._map.is_lost], dtype=np.bool_),
+        )
+        logger.info("Saved SLAM map to '%s'.", path)

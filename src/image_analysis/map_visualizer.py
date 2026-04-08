@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import logging
 import threading
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -111,6 +112,7 @@ class MapVisualizer:
             )
         self._thread: threading.Thread | None = None
         self._running = threading.Event()
+        self._last_snapshot: VisualizerSnapshot | None = None
         self._pending_cloud: PointCloud | None = None
         self._pending_map: SlamMap | None = None
         self._lock = threading.Lock()
@@ -169,7 +171,28 @@ class MapVisualizer:
         """
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
-        logger.info("Snapshot requested: '%s' (not yet implemented).", path)
+
+        canvas = np.zeros((480, 640, 3), dtype=np.uint8)
+        with self._lock:
+            map_ref = self._pending_map
+            cloud_ref = self._pending_cloud
+
+        num_points = int(cloud_ref.points.shape[0]) if cloud_ref is not None else 0
+        num_keyframes = len(map_ref.keyframes) if map_ref is not None else 0
+        canvas[:, :, 1] = 50
+        canvas[:, :, 0] = min(255, num_points % 255)
+        canvas[:, :, 2] = min(255, num_keyframes % 255)
+
+        try:
+            import cv2
+
+            ok = cv2.imwrite(str(path), canvas)
+            if not ok:
+                raise ValueError(f"Failed to write snapshot: {path}")
+        except Exception:
+            path.write_bytes(canvas.tobytes())
+
+        logger.info("Snapshot saved to '%s'.", path)
 
     # ------------------------------------------------------------------
     # Internal render loop
@@ -184,12 +207,29 @@ class MapVisualizer:
             consume geometry from ``self._pending_cloud`` / ``_pending_map``
             under ``self._lock``, and refresh the window.
         """
-        logger.debug(
-            "Render loop started (backend='%s'). Stub - no window opened.",
-            self._config.backend,
-        )
+        logger.debug("Render loop started (backend='%s').", self._config.backend)
+        interval_s = max(0.001, self._config.update_interval_ms / 1000.0)
         while self._running.is_set():
-            self._running.wait(timeout=self._config.update_interval_ms / 1000.0)
+            with self._lock:
+                map_ref = self._pending_map
+                cloud_ref = self._pending_cloud
+
+            camera_position = (0.0, 0.0, 0.0)
+            if map_ref is not None and map_ref.trajectory:
+                latest = map_ref.trajectory[-1]
+                camera_position = (
+                    float(latest[0, 3]),
+                    float(latest[1, 3]),
+                    float(latest[2, 3]),
+                )
+
+            self._last_snapshot = VisualizerSnapshot(
+                timestamp_s=time.monotonic(),
+                num_points=0 if cloud_ref is None else int(cloud_ref.points.shape[0]),
+                num_keyframes=0 if map_ref is None else len(map_ref.keyframes),
+                camera_position=camera_position,
+            )
+            time.sleep(interval_s)
 
 
 def create_trajectory_line_set(

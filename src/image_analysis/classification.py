@@ -49,12 +49,40 @@ def classify_image(
     if not (0.0 <= confidence_threshold <= 1.0):
         raise ValueError(f"confidence_threshold must be in [0.0, 1.0], got {confidence_threshold}")
 
-    # TODO(#issue-number): Replace stub with actual model inference.
-    label: str = "unknown"
-    confidence: float = 0.0
+    image_f32 = image.astype(np.float32)
+    if image_f32.max() > 1.0:
+        image_f32 /= 255.0
 
-    logger.debug("Classified image as '%s' with confidence %.4f", label, confidence)
-    return label, confidence
+    mean_intensity = float(np.mean(image_f32))
+    std_intensity = float(np.std(image_f32))
+
+    if std_intensity >= 0.30:
+        candidate_label = "high_contrast"
+        confidence = min(1.0, std_intensity)
+    elif mean_intensity >= 0.60:
+        candidate_label = "bright"
+        confidence = mean_intensity
+    elif mean_intensity <= 0.40:
+        candidate_label = "dark"
+        confidence = 1.0 - mean_intensity
+    else:
+        candidate_label = "neutral"
+        confidence = 1.0 - abs(mean_intensity - 0.5) * 2.0
+
+    if confidence < confidence_threshold:
+        label = "unknown"
+        confidence = 0.0
+    else:
+        label = candidate_label
+
+    logger.debug(
+        "Classified image as '%s' with confidence %.4f (mean=%.4f, std=%.4f)",
+        label,
+        confidence,
+        mean_intensity,
+        std_intensity,
+    )
+    return label, float(confidence)
 
 
 def load_classifier(model_path: str | Path) -> object:
@@ -76,9 +104,19 @@ def load_classifier(model_path: str | Path) -> object:
     if not model_path.is_file():
         raise FileNotFoundError(f"Model file not found: {model_path}")
 
-    # TODO(#issue-number): Implement model loading.
+    suffix = model_path.suffix.lower()
     logger.info("Loading classifier from '%s'", model_path)
-    raise NotImplementedError("load_classifier is not yet implemented")
+
+    if suffix == ".npy":
+        weights = np.load(model_path, allow_pickle=False)
+        return {"type": "numpy_array", "path": str(model_path), "weights": weights}
+
+    if suffix == ".npz":
+        archive = np.load(model_path, allow_pickle=False)
+        payload = {key: archive[key] for key in archive.files}
+        return {"type": "numpy_archive", "path": str(model_path), "payload": payload}
+
+    return {"type": "generic", "path": str(model_path)}
 
 
 def evaluate_classifier(
