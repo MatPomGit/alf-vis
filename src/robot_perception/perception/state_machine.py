@@ -1,7 +1,7 @@
 from __future__ import annotations
 import time
 import traceback
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 from common.enums import PerceptionState
 from common.models import AppConfig, DetectedObject, PerceptionSnapshot
 from common.utils import timed_call
@@ -20,9 +20,15 @@ from perception.yolo_service import YoloService
 from slam.rtabmap_ros_bridge import RTABMapRosBridge
 from slam.tf_service import TfService
 class RobotPerceptionStateMachine:
-    def __init__(self, config: AppConfig, ros_node: PerceptionRosNode, selected_source: str='rgbd') -> None:
+    def __init__(
+        self,
+        config: AppConfig,
+        ros_node: PerceptionRosNode,
+        selected_source: str='rgbd',
+        camera_service: Optional[CameraService] = None,
+    ) -> None:
         self.config=config; self.ros_node=ros_node; self.selected_source=selected_source; self.state=PerceptionState.IDLE; self.snapshot=PerceptionSnapshot(camera_id=config.camera_id); self.last_module_inputs: Dict[str, Dict[str, Any]] = {}
-        self.camera_service=CameraService(config.camera_id, config.camera_width, config.camera_height, config.output_dir)
+        self.camera_service = camera_service or CameraService(config.camera_id, config.camera_width, config.camera_height, config.output_dir)
         self.rgbd_service=RGBDService(config.depth_camera_id, config.camera_width, config.camera_height, config.output_dir)
         self.depth_enabled = selected_source == 'rgbd' and self.rgbd_service.is_available()
         if selected_source == 'rgbd' and not self.depth_enabled and config.allow_rgb_fallback: warn('Wybrano RGB-D, ale depth nie działa. Przechodzę do RGB-only.')
@@ -40,7 +46,7 @@ class RobotPerceptionStateMachine:
         return {"current_state": self.state.name, "frame_id": self.snapshot.frame_id, "selected_source": self.selected_source, "depth_enabled": self.depth_enabled, "processing_times_ms": self.snapshot.processing_times_ms, "last_module_inputs": self.last_module_inputs, "slam_initialized": self.snapshot.slam.initialized, "map_point_count": self.snapshot.slam.map_point_count, "tracked_objects": len(self.snapshot.tracked_objects), "markers": len(self.snapshot.markers), "humans": len(self.snapshot.humans), "obstacles": len(self.snapshot.obstacles), "point_cloud_points": self.snapshot.point_cloud.point_count, "point_cloud_frame": self.snapshot.point_cloud.coordinate_frame}
     def transition_to(self, next_state: PerceptionState) -> None:
         info(f"Przejście stanu: {self.state.name} -> {next_state.name}"); self.state=next_state
-    def run_once(self) -> None:
+    def run_once(self) -> bool:
         try:
             if self.state == PerceptionState.IDLE:
                 self.snapshot.frame_id += 1; self.snapshot.timestamp_sec=time.time(); self.transition_to(PerceptionState.CAPTURE_RGBD_FRAME)
@@ -107,8 +113,16 @@ class RobotPerceptionStateMachine:
                 self.print_snapshot()
             else:
                 raise ValueError(f'Nieobsługiwany stan: {self.state}')
+            return True
+        except StopIteration as exc:
+            info(f"Zatrzymanie pętli percepcji: {exc}")
+            self.snapshot.system_ok = True
+            self.snapshot.error_message = None
+            self.transition_to(PerceptionState.IDLE)
+            return False
         except Exception as exc:
             self.snapshot.system_ok=False; self.snapshot.error_message=f"{exc}\n{traceback.format_exc()}"; error(f"Błąd krytyczny: {exc}"); self.transition_to(PerceptionState.ERROR)
+            return False
     def print_snapshot(self) -> None:
         print('\n=== AKTUALNY STAN PERCEPCJI ROBOTA ==='); print(self.snapshot.model_dump_json(indent=2)); print('=== KONIEC STANU PERCEPCJI ===\n')
     def shutdown(self) -> None:
