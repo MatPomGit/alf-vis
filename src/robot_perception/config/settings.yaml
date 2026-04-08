@@ -1,4 +1,5 @@
 camera_id: 0
+depth_camera_id: 0
 camera_width: 640
 camera_height: 480
 output_dir: output
@@ -7,7 +8,9 @@ perception_state_topic: /perception/state
 point_cloud_topic: /perception/point_cloud
 yolo_model_path: yolov8s.pt
 april_tag_family: tag36h11
-rtabmap_database_path: output/rtabmap.db
-rtabmap_launch_package: rtabmap_launch
-rtabmap_launch_file: rtabmap.launch.py
+april_tag_size_m: 0.162
+calibration_file: config/camera_calibration.yaml
+rtabmap_odom_topic: /rtabmap/odom_info
+rtabmap_mapdata_topic: /rtabmap/mapData
+rtabmap_localization_topic: /rtabmap/info
 planned_path_y_tolerance: 0.5

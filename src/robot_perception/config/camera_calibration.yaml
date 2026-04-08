@@ -1,0 +1,8 @@
+image_width: 640
+image_height: 480
+camera_matrix:
+  - [525.0, 0.0, 319.5]
+  - [0.0, 525.0, 239.5]
+  - [0.0, 0.0, 1.0]
+distortion_coefficients: [0.0, 0.0, 0.0, 0.0, 0.0]
+calibration_rms: 0.0

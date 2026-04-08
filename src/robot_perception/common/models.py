@@ -1,13 +1,10 @@
 from __future__ import annotations
-
-from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-
-from pydantic import BaseModel, Field, ConfigDict
+from typing import Dict, List, Optional, Tuple
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ImageMeta(BaseModel):
-    """Metadane pojedynczej ramki obrazu."""
+    """Metadane obrazu RGB."""
 
     width: int
     height: int
@@ -16,8 +13,18 @@ class ImageMeta(BaseModel):
     camera_id: int = 0
 
 
+class DepthMeta(BaseModel):
+    """Metadane obrazu głębi."""
+
+    width: int
+    height: int
+    encoding: str = "16UC1"
+    depth_scale: float = 1000.0
+    depth_unit_m: float = 0.001
+
+
 class ROI(BaseModel):
-    """Region zainteresowania w obrazie."""
+    """Region zainteresowania."""
 
     x: int
     y: int
@@ -26,7 +33,7 @@ class ROI(BaseModel):
 
 
 class Pose3D(BaseModel):
-    """Prosta reprezentacja pozy 3D."""
+    """Poza 3D."""
 
     x: float
     y: float
@@ -36,20 +43,34 @@ class Pose3D(BaseModel):
     yaw: float = 0.0
 
 
+class CameraCalibration(BaseModel):
+    """Parametry kalibracji kamery."""
+
+    model_config = ConfigDict(arbitrary_types_allowed=True)
+
+    image_width: int
+    image_height: int
+    camera_matrix: List[List[float]]
+    distortion_coefficients: List[float]
+    calibration_rms: Optional[float] = None
+
+
 class VisualMarker(BaseModel):
-    """Opis wykrytego markera AprilTag."""
+    """Opis wykrytego markera AprilTag wraz z estymowaną pozą."""
 
     tag_id: int
     family: str
     center: Tuple[float, float]
     corners: List[Tuple[float, float]]
-    pose: Optional[Pose3D] = None
     decision_margin: Optional[float] = None
     hamming: Optional[int] = None
+    pose: Optional[Pose3D] = None
+    translation_vector: Optional[List[float]] = None
+    rotation_vector: Optional[List[float]] = None
 
 
 class DetectedObject(BaseModel):
-    """Opis obiektu wykrytego przez detektor YOLO."""
+    """Obiekt wykryty przez YOLO."""
 
     label: str
     class_id: int
@@ -60,7 +81,7 @@ class DetectedObject(BaseModel):
 
 
 class TrackedObject(BaseModel):
-    """Opis obiektu śledzonego filtrem Kalmana."""
+    """Obiekt śledzony przez filtr Kalmana."""
 
     object_id: int
     label: str
@@ -73,7 +94,7 @@ class TrackedObject(BaseModel):
 
 
 class PointCloudData(BaseModel):
-    """Reprezentacja chmury punktów używana przez warstwę aplikacyjną."""
+    """Chmura punktów w warstwie aplikacyjnej."""
 
     coordinate_frame: str = "map"
     points: List[Tuple[float, float, float]] = Field(default_factory=list)
@@ -85,25 +106,34 @@ class PointCloudData(BaseModel):
 
 
 class SlamStatus(BaseModel):
-    """Stan pracy systemu SLAM."""
+    """Stan pobierany z RTAB-Map."""
 
     initialized: bool = False
     status: str = "NOT_INITIALIZED"
     pose: Optional[Pose3D] = None
     map_point_count: int = 0
+    odom_lost: bool = False
+    inliers: int = 0
+    matches: int = 0
+    localization_id: int = 0
+    loop_closure_id: int = 0
     database_path: Optional[str] = None
 
 
 class PerceptionSnapshot(BaseModel):
-    """Pełny bieżący stan percepcji robota."""
+    """Pełny stan percepcji."""
 
     model_config = ConfigDict(arbitrary_types_allowed=True)
 
     frame_id: int = 0
     timestamp_sec: float = 0.0
     camera_id: int = 0
+
     image_path: Optional[str] = None
+    depth_path: Optional[str] = None
     image_meta: Optional[ImageMeta] = None
+    depth_meta: Optional[DepthMeta] = None
+    calibration: Optional[CameraCalibration] = None
 
     roi: Optional[ROI] = None
     markers: List[VisualMarker] = Field(default_factory=list)
@@ -112,10 +142,10 @@ class PerceptionSnapshot(BaseModel):
     new_objects: List[DetectedObject] = Field(default_factory=list)
     tracked_objects: List[TrackedObject] = Field(default_factory=list)
 
+    slam: SlamStatus = Field(default_factory=SlamStatus)
     path_deviation_detected: bool = False
     path_deviation_value: float = 0.0
 
-    slam: SlamStatus = Field(default_factory=SlamStatus)
     point_cloud: PointCloudData = Field(default_factory=PointCloudData)
     point_cloud_save_path: Optional[str] = None
 
@@ -125,9 +155,10 @@ class PerceptionSnapshot(BaseModel):
 
 
 class AppConfig(BaseModel):
-    """Konfiguracja całej aplikacji percepcji."""
+    """Konfiguracja aplikacji."""
 
     camera_id: int = 0
+    depth_camera_id: int = 0
     camera_width: int = 640
     camera_height: int = 480
     output_dir: str = "output"
@@ -136,7 +167,12 @@ class AppConfig(BaseModel):
     point_cloud_topic: str = "/perception/point_cloud"
     yolo_model_path: str = "yolov8s.pt"
     april_tag_family: str = "tag36h11"
-    rtabmap_database_path: str = "output/rtabmap.db"
-    rtabmap_launch_package: str = "rtabmap_launch"
-    rtabmap_launch_file: str = "rtabmap.launch.py"
+    april_tag_size_m: float = 0.162
+    calibration_file: str = "config/camera_calibration.yaml"
+
+    rtabmap_odom_topic: str = "/rtabmap/odom_info"
+    rtabmap_mapdata_topic: str = "/rtabmap/mapData"
+    rtabmap_localization_topic: str = "/rtabmap/info"
+
     planned_path_y_tolerance: float = 0.5
+

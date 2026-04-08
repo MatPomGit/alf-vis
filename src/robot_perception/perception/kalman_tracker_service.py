@@ -8,11 +8,7 @@ from common.models import DetectedObject, TrackedObject
 
 
 class SimpleKalmanTrackerService:
-    """Prosta implementacja śledzenia 2D oparta o filtr Kalmana.
-
-    Uwaga: to nadal jest implementacja uproszczona, ale sensowna jako punkt startowy
-    dla produkcyjnego rozwoju. Każdy obiekt ma stan [x, y, vx, vy].
-    """
+    """Prosty tracker obiektów 2D z filtrem Kalmana."""
 
     def __init__(self) -> None:
         self._next_object_id = 1
@@ -55,10 +51,8 @@ class SimpleKalmanTrackerService:
     def _predict(self, object_id: int) -> None:
         x = self._states[object_id]
         P = self._covariances[object_id]
-
         x = self.F @ x
         P = self.F @ P @ self.F.T + self.Q
-
         self._states[object_id] = x
         self._covariances[object_id] = P
 
@@ -83,11 +77,9 @@ class SimpleKalmanTrackerService:
         match_distance_px: float = 60.0,
     ) -> List[TrackedObject]:
         """Aktualizuje listę śledzonych obiektów."""
-        tracks_by_id = {t.object_id: t for t in previous_tracks}
-
-        for track_id in tracks_by_id:
-            if track_id in self._states:
-                self._predict(track_id)
+        for tr in previous_tracks:
+            if tr.object_id in self._states:
+                self._predict(tr.object_id)
 
         updated_tracks: List[TrackedObject] = []
         used_track_ids = set()
@@ -108,6 +100,7 @@ class SimpleKalmanTrackerService:
                 dx = det.centroid_xy[0] - pred[0]
                 dy = det.centroid_xy[1] - pred[1]
                 dist = float((dx * dx + dy * dy) ** 0.5)
+
                 if dist < best_dist and dist < match_distance_px:
                     best_dist = dist
                     best_track_id = tr.object_id
@@ -136,6 +129,7 @@ class SimpleKalmanTrackerService:
         return updated_tracks
 
     # TODO: dodać obsługę wygaszania starych tracków, track age i miss count.
+    # TODO: dodać wygaszanie tracków i licznik missed detections.
 
 
 

@@ -1,27 +1,22 @@
 from __future__ import annotations
+
 from common.models import Pose3D
 
-
-# Usługa sprawdzania odchylenia od planowanej trajektorii.
 class PathDeviationService:
-    """Usługa sprawdzania odchylenia od planowanej trajektorii."""
+    """Usługa sprawdzania odchylenia od planowanej ścieżki."""
 
     def __init__(self, y_tolerance: float = 0.5) -> None:
         self.y_tolerance = y_tolerance
 
     def check(self, pose: Pose3D | None) -> tuple[bool, float]:
-        """Sprawdza, czy robot odchylił się od ścieżki.
-
-        Wersja bazowa zakłada, że tor referencyjny pokrywa się z osią X, a odchylenie
-        mierzone jest przez współrzędną Y.
-        """
+        """Sprawdza odchylenie od ścieżki."""
         if pose is None:
             return False, 0.0
 
         deviation = abs(pose.y)
         return deviation > self.y_tolerance, float(deviation)
 
-    # TODO: zintegrować z realną ścieżką z Nav2 / planera globalnego.
+    # TODO: zintegrować z globalnym plannerem Nav2 i prawdziwą trajektorią referencyjną.
 
 
 

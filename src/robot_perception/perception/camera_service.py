@@ -1,13 +1,17 @@
 from __future__ import annotations
+
 from pathlib import Path
 from typing import Tuple
+
 import cv2
+import numpy as np
+
 from common.models import ImageMeta
 from common.utils import ensure_dir
 
 
 class CameraService:
-    """Usługa odpowiedzialna za pobranie ramki z kamery i jej zapis pomocniczy."""
+    """Usługa pobierania ramki RGB z kamery."""
 
     def __init__(self, camera_id: int, width: int, height: int, output_dir: str) -> None:
         self.camera_id = camera_id
@@ -20,15 +24,14 @@ class CameraService:
         self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
         if not self.cap.isOpened():
-            raise RuntimeError(f"Nie udało się otworzyć kamery o ID={camera_id}.")
+            raise RuntimeError(f"Nie udało się otworzyć kamery RGB o ID={camera_id}.")
 
-    def capture(self, frame_id: int) -> Tuple[any, str, ImageMeta]:
-        """Pobiera jedną ramkę z kamery i zapisuje ją na dysku."""
+    def capture(self, frame_id: int) -> Tuple[np.ndarray, str, ImageMeta]:
+        """Pobiera jedną ramkę RGB i zapisuje ją na dysku."""
         ok, frame = self.cap.read()
         if not ok or frame is None:
-            raise RuntimeError("Nie udało się pobrać obrazu z kamery.")
+            raise RuntimeError("Nie udało się pobrać obrazu RGB z kamery.")
 
-        # TODO: dodać obsługę kamer RGB-D i synchronizacji depth/rgb.
         image_path = self.frames_dir / f"frame_{frame_id:06d}.png"
         cv2.imwrite(str(image_path), frame)
 
@@ -42,5 +45,5 @@ class CameraService:
         return frame, str(image_path), meta
 
     def close(self) -> None:
-        """Zwalnia uchwyt kamery."""
+        """Zamyka kamerę RGB."""
         self.cap.release()

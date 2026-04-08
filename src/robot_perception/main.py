@@ -1,14 +1,12 @@
 from __future__ import annotations
 import rclpy
-
 from common.utils import load_config
-from common.enums import PerceptionState
 from perception.ros2_node import PerceptionRosNode
 from perception.state_machine import RobotPerceptionStateMachine
 
 
 def main() -> None:
-    """Punkt wejścia aplikacji percepcji robota."""
+    """Punkt wejścia pełnej aplikacji percepcji."""
     config = load_config("config/settings.yaml")
 
     rclpy.init()

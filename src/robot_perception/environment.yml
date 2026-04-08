@@ -1,0 +1,14 @@
+name: robot_perception
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - numpy>=1.26
+  - pyyaml>=6.0
+  - opencv>=4.9
+  - pip:
+      - pydantic>=2.7
+      - open3d>=0.19
+      - ultralytics>=8.3
+      - pupil-apriltags>=1.0.4

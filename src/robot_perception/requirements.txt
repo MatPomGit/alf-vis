@@ -8,7 +8,15 @@ ultralytics>=8.3
 pupil-apriltags>=1.0.4
 PyYAML>=6.0
 
-# Uwaga: rclpy, sensor_msgs, std_msgs, geometry_msgs, cv_bridge 
-# i pakiety ROS2 zwykle instaluje się przez dystrybucję ROS2, a nie przez pip. 
-# To zależy od distro i sposobu provisioningu środowiska. 
-# rclpy jest kanonicznym Python API dla ROS2. (docs.ros.org)
+# Uwaga, pakiety ROS2:
+    # rclpy, 
+    # sensor_msgs, 
+    # geometry_msgs, 
+    # std_msgs, 
+    # cv_bridge, 
+    # sensor_msgs_py, 
+    # rtabmap_msgs
+# powinny być dostarczone przez
+    # dystrybucję ROS2 
+    # lub system pakietów 
+    # lub kontener środowiska robota
