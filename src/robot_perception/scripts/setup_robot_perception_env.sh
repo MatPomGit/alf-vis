@@ -115,7 +115,17 @@ install_python_dependencies() {
   python -m pip install --upgrade pip setuptools wheel
 
   if [[ -f "${PROJECT_ROOT}/requirements.txt" ]]; then
+    # Instalacja zależności Python
     python -m pip install -r "${PROJECT_ROOT}/requirements.txt"
+
+    # Dodatkowe pakiety używane przez projekt
+    python -m pip install transforms3d
+
+    # Torch 2.11.0 wymaga setuptools < 82
+    python -m pip install "numpy==1.26.4" "setuptools<82" "transforms3d>=0.4.2"
+              
+    # Kontrola spójności środowiska
+    python -m pip check || true
   fi
 
   # Dodatkowe zależności użyte w kodzie, które warto wymusić jawnie.
