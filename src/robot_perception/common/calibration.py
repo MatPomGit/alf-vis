@@ -1,14 +1,12 @@
 from __future__ import annotations
-
 from pathlib import Path
 from typing import Iterable, List, Tuple
-
 import cv2
 import numpy as np
 import yaml
-
 from common.models import CameraCalibration
-
+# https://github.com/kyle-bersani/opencv-examples/blob/master/CalibrationByChessboard/CalibrateCamera.py
+# https://github.com/cmower/aruco_markers/tree/master/example
 
 def calibrate_camera_from_chessboard(
     image_paths: list[str],
@@ -60,6 +58,7 @@ def calibrate_camera_from_chessboard(
         None,
         None,
     )
+    print("Przeprowadzam kalibrację kamery")
 
     return CameraCalibration(
         image_width=int(image_shape[0]),
@@ -67,6 +66,8 @@ def calibrate_camera_from_chessboard(
         camera_matrix=camera_matrix.tolist(),
         distortion_coefficients=dist_coeffs.flatten().tolist(),
         calibration_rms=float(rms),
+        # Print matrix and distortion coefficient to the console
+        # print("image_width =", int(image_shape[0]))
     )
 
 
@@ -76,3 +77,4 @@ def save_camera_calibration(calibration: CameraCalibration, output_path: str | P
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         yaml.safe_dump(calibration.model_dump(), f, sort_keys=False)
+    print("Zapisuje dane kalibracyjne kamery")
