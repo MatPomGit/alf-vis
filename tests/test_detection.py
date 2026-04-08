@@ -40,9 +40,15 @@ def sample_detections() -> list[Detection]:
 
 
 class TestDetectObjects:
-    def test_returns_empty_list_for_stub(self, bgr_image: np.ndarray) -> None:
+    def test_returns_detection_objects(self, bgr_image: np.ndarray) -> None:
         result = detect_objects(bgr_image)
-        assert result == []
+        assert isinstance(result, list)
+        assert all(isinstance(det, Detection) for det in result)
+
+    def test_results_are_sorted_by_confidence(self, bgr_image: np.ndarray) -> None:
+        result = detect_objects(bgr_image, confidence_threshold=0.0)
+        confidences = [det.confidence for det in result]
+        assert confidences == sorted(confidences, reverse=True)
 
     def test_raises_for_non_ndarray(self) -> None:
         with pytest.raises(TypeError):

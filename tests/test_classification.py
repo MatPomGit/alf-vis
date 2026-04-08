@@ -5,7 +5,7 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from image_analysis.classification import classify_image, evaluate_classifier
+from image_analysis.classification import classify_image, evaluate_classifier, load_classifier
 
 # ---------------------------------------------------------------------------
 # Fixtures
@@ -30,8 +30,13 @@ class TestClassifyImage:
         assert isinstance(label, str)
         assert isinstance(confidence, float)
 
-    def test_stub_returns_unknown_and_zero(self, bgr_image: np.ndarray) -> None:
-        label, confidence = classify_image(bgr_image)
+    def test_returns_confidence_in_valid_range(self, bgr_image: np.ndarray) -> None:
+        _, confidence = classify_image(bgr_image)
+        assert 0.0 <= confidence <= 1.0
+
+    def test_returns_unknown_for_too_high_threshold(self) -> None:
+        image = np.full((64, 64, 3), 127, dtype=np.uint8)
+        label, confidence = classify_image(image, confidence_threshold=0.999)
         assert label == "unknown"
         assert confidence == 0.0
 
@@ -85,3 +90,27 @@ class TestEvaluateClassifier:
     def test_raises_for_length_mismatch(self) -> None:
         with pytest.raises(ValueError):
             evaluate_classifier([("cat", 0.9)], ["cat", "dog"])
+
+
+# ---------------------------------------------------------------------------
+# load_classifier
+# ---------------------------------------------------------------------------
+
+
+class TestLoadClassifier:
+    def test_raises_for_missing_file(self, tmp_path) -> None:
+        with pytest.raises(FileNotFoundError):
+            load_classifier(tmp_path / "missing.npy")
+
+    def test_loads_npy_model(self, tmp_path) -> None:
+        path = tmp_path / "weights.npy"
+        np.save(path, np.array([1.0, 2.0], dtype=np.float32))
+        model = load_classifier(path)
+        assert model["type"] == "numpy_array"
+
+    def test_loads_npz_model(self, tmp_path) -> None:
+        path = tmp_path / "weights.npz"
+        np.savez(path, w=np.array([1.0], dtype=np.float32))
+        model = load_classifier(path)
+        assert model["type"] == "numpy_archive"
+        assert "w" in model["payload"]
