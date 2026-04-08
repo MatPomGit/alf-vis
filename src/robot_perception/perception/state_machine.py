@@ -10,6 +10,7 @@ from perception.camera_calibration_service import CameraCalibrationService
 from perception.camera_service import CameraService
 from perception.console import info, warn, error
 from perception.kalman_tracker_service import SimpleKalmanTrackerService
+from perception.light_target_service import LightTargetService
 from perception.novelty_service import NoveltyService
 from perception.path_deviation_service import PathDeviationService
 from perception.point_cloud_service import PointCloudService
@@ -29,6 +30,7 @@ class RobotPerceptionStateMachine:
         elif selected_source == 'rgb': info('Wymuszono tryb RGB-only.')
         self.calibration_service=CameraCalibrationService(config.calibration_file)
         self.active_vision_service=ActiveVisionService()
+        self.light_target_service=LightTargetService(config.light_spot_threshold, config.light_spot_min_area_px)
         self.visual_marker_service=VisualMarkerService(apriltag_family=config.april_tag_family, apriltag_size_m=config.april_tag_size_m, apriltag_enabled=config.apriltag_enabled, cctag_enabled=config.cctag_enabled, qr_enabled=config.qr_enabled)
         self.yolo_service=YoloService(config.yolo_model_path)
         self.novelty_service=NoveltyService(); self.kalman_service=SimpleKalmanTrackerService(); self.path_deviation_service=PathDeviationService(config.planned_path_y_tolerance); self.point_cloud_service=PointCloudService(config.output_dir)
@@ -37,7 +39,7 @@ class RobotPerceptionStateMachine:
     def _record_time(self, name: str, value_ms: float) -> None: self.snapshot.processing_times_ms[name]=value_ms
     def _remember_inputs(self, module_name: str, **kwargs: Any) -> None: self.last_module_inputs[module_name]=kwargs
     def get_debug_view(self) -> Dict[str, Any]:
-        return {"current_state": self.state.name, "frame_id": self.snapshot.frame_id, "selected_source": self.selected_source, "depth_enabled": self.depth_enabled, "processing_times_ms": self.snapshot.processing_times_ms, "last_module_inputs": self.last_module_inputs, "slam_initialized": self.snapshot.slam.initialized, "map_point_count": self.snapshot.slam.map_point_count, "tracked_objects": len(self.snapshot.tracked_objects), "markers": len(self.snapshot.markers), "humans": len(self.snapshot.humans), "obstacles": len(self.snapshot.obstacles), "point_cloud_points": self.snapshot.point_cloud.point_count, "point_cloud_frame": self.snapshot.point_cloud.coordinate_frame}
+        return {"current_state": self.state.name, "frame_id": self.snapshot.frame_id, "selected_source": self.selected_source, "depth_enabled": self.depth_enabled, "processing_times_ms": self.snapshot.processing_times_ms, "last_module_inputs": self.last_module_inputs, "slam_initialized": self.snapshot.slam.initialized, "map_point_count": self.snapshot.slam.map_point_count, "tracked_objects": len(self.snapshot.tracked_objects), "markers": len(self.snapshot.markers), "humans": len(self.snapshot.humans), "obstacles": len(self.snapshot.obstacles), "light_target_detected": self.snapshot.light_target is not None, "point_cloud_points": self.snapshot.point_cloud.point_count, "point_cloud_frame": self.snapshot.point_cloud.coordinate_frame}
     def transition_to(self, next_state: PerceptionState) -> None:
         info(f"Przejście stanu: {self.state.name} -> {next_state.name}"); self.state=next_state
     def run_once(self) -> None:
@@ -61,7 +63,11 @@ class RobotPerceptionStateMachine:
             elif self.state == PerceptionState.ACTIVE_VISION:
                 self._remember_inputs('active_vision_service.select_roi', mode=self.config.visual_attention_mode)
                 av_result, elapsed = timed_call(self.active_vision_service.select_roi, self.current_frame, self.config.visual_attention_mode)
-                self.snapshot.roi=av_result.roi; self._record_time('active_vision', elapsed); self.transition_to(PerceptionState.DETECT_VISUAL_MARKERS)
+                self.snapshot.roi=av_result.roi; self._record_time('active_vision', elapsed); self.transition_to(PerceptionState.DETECT_LIGHT_TARGET)
+            elif self.state == PerceptionState.DETECT_LIGHT_TARGET:
+                self._remember_inputs('light_target_service.detect', roi=self.snapshot.roi.model_dump() if self.snapshot.roi else None, threshold=self.config.light_spot_threshold, min_area_px=self.config.light_spot_min_area_px)
+                light_target, elapsed = timed_call(self.light_target_service.detect, self.current_frame, self.snapshot.roi)
+                self.snapshot.light_target = light_target; self._record_time('detect_light_target', elapsed); self.transition_to(PerceptionState.DETECT_VISUAL_MARKERS)
             elif self.state == PerceptionState.DETECT_VISUAL_MARKERS:
                 self._remember_inputs('visual_marker_service.detect', roi=self.snapshot.roi.model_dump() if self.snapshot.roi else None, apriltag_enabled=self.config.apriltag_enabled, cctag_enabled=self.config.cctag_enabled, qr_enabled=self.config.qr_enabled)
                 markers, elapsed = timed_call(self.visual_marker_service.detect, self.current_frame, self.snapshot.calibration, self.snapshot.roi)
