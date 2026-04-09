@@ -4,6 +4,7 @@ class PerceptionState(Enum):
     CAPTURE_RGBD_FRAME = auto()
     INIT_RTABMAP_BRIDGE = auto()
     ACTIVE_VISION = auto()
+    DETECT_LIGHT_TARGET = auto()
     DETECT_VISUAL_MARKERS = auto()
     DETECT_HUMAN = auto()
     DETECT_OBSTACLE = auto()

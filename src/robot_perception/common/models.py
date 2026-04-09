@@ -51,6 +51,13 @@ class VisualMarker(BaseModel):
     reprojection_error_px: Optional[float] = None
     pose_quality: Optional[str] = None
 
+class LightTarget(BaseModel):
+    center_xy: Tuple[float, float]
+    axes_xy: Tuple[float, float]
+    angle_deg: float
+    area_px: float
+    contour_points: int
+
 class DetectedObject(BaseModel):
     label: str
     class_id: int
@@ -102,6 +109,7 @@ class PerceptionSnapshot(BaseModel):
     depth_meta: Optional[DepthMeta] = None
     calibration: Optional[CameraCalibration] = None
     roi: Optional[ROI] = None
+    light_target: Optional[LightTarget] = None
     markers: List[VisualMarker] = Field(default_factory=list)
     humans: List[DetectedObject] = Field(default_factory=list)
     obstacles: List[DetectedObject] = Field(default_factory=list)
@@ -143,3 +151,7 @@ class AppConfig(BaseModel):
     transform_validation_rotation_limit_rad: float = 3.2
     apriltag_reprojection_good_px: float = 1.5
     apriltag_reprojection_warn_px: float = 4.0
+    light_spot_threshold: int = 230
+    light_spot_min_area_px: float = 40.0
+    light_spot_hsv_lower: Optional[List[int]] = None
+    light_spot_hsv_upper: Optional[List[int]] = None

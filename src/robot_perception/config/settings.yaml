@@ -24,3 +24,7 @@ transform_validation_translation_limit_m: 50.0
 transform_validation_rotation_limit_rad: 3.2
 apriltag_reprojection_good_px: 1.5
 apriltag_reprojection_warn_px: 4.0
+light_spot_threshold: 230
+light_spot_min_area_px: 40.0
+light_spot_hsv_lower: null
+light_spot_hsv_upper: null
