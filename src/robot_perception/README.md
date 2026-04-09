@@ -463,3 +463,31 @@ conda activate robot_perception
 source /opt/ros/humble/setup.bash
 python main_perception.py --source rgbd
 ```
+
+
+## 13. Praca na nagraniu MP4 (zamiast kamery live)
+
+### 13.1. Odtwarzanie pipeline percepcji na MP4
+
+```bash
+python scripts/run_perception_from_mp4.py /sciezka/do/nagrania.mp4 --source rgb --config config/settings.yaml
+```
+
+Opcjonalne flagi:
+- `--max-frames 300` — zatrzymanie po określonej liczbie pełnych klatek pipeline,
+- `--print-snapshot` — wypisywanie pełnego snapshotu JSON na każdej klatce.
+
+### 13.2. Pomiar jakości i stabilności śledzenia do CSV
+
+```bash
+python scripts/measure_tracking_from_mp4.py /sciezka/do/nagrania.mp4 --source rgb --csv output/tracking_measurements.csv --config config/settings.yaml
+```
+
+Skrypt pomiarowy zapisuje w CSV dane dla **każdego kroku** maszyny stanów, w tym m.in.:
+- `frame_id`, `frame_timestamp_sec`, `video_timestamp_sec`,
+- stan przed i po kroku (`state_before`, `state_after`),
+- liczby detekcji, markerów i tracków,
+- metryki stabilności śledzenia (`tracks_mean_displacement_px`, `tracks_max_displacement_px`, liczba tracków nowych/utraconych),
+- czasy etapów (`time_ms::...`) dla wszystkich kroków pipeline.
+
+Dzięki temu możesz uruchamiać ten sam plik MP4 wielokrotnie z różnymi parametrami i porównywać jakość śledzenia między konfiguracjami.
