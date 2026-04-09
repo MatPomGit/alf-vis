@@ -36,7 +36,7 @@ class RobotPerceptionStateMachine:
         elif selected_source == 'rgb': info('Wymuszono tryb RGB-only.')
         self.calibration_service=CameraCalibrationService(config.calibration_file)
         self.active_vision_service=ActiveVisionService()
-        self.light_target_service=LightTargetService(config.light_spot_threshold, config.light_spot_min_area_px)
+        self.light_target_service=LightTargetService(config.light_spot_threshold, config.light_spot_min_area_px, config.light_spot_hsv_lower, config.light_spot_hsv_upper)
         self.visual_marker_service=VisualMarkerService(apriltag_family=config.april_tag_family, apriltag_size_m=config.april_tag_size_m, apriltag_enabled=config.apriltag_enabled, cctag_enabled=config.cctag_enabled, qr_enabled=config.qr_enabled)
         self.yolo_service=YoloService(config.yolo_model_path)
         self.novelty_service=NoveltyService(); self.kalman_service=SimpleKalmanTrackerService(); self.path_deviation_service=PathDeviationService(config.planned_path_y_tolerance); self.point_cloud_service=PointCloudService(config.output_dir)
@@ -71,7 +71,7 @@ class RobotPerceptionStateMachine:
                 av_result, elapsed = timed_call(self.active_vision_service.select_roi, self.current_frame, self.config.visual_attention_mode)
                 self.snapshot.roi=av_result.roi; self._record_time('active_vision', elapsed); self.transition_to(PerceptionState.DETECT_LIGHT_TARGET)
             elif self.state == PerceptionState.DETECT_LIGHT_TARGET:
-                self._remember_inputs('light_target_service.detect', roi=self.snapshot.roi.model_dump() if self.snapshot.roi else None, threshold=self.config.light_spot_threshold, min_area_px=self.config.light_spot_min_area_px)
+                self._remember_inputs('light_target_service.detect', roi=self.snapshot.roi.model_dump() if self.snapshot.roi else None, threshold=self.config.light_spot_threshold, min_area_px=self.config.light_spot_min_area_px, hsv_lower=self.config.light_spot_hsv_lower, hsv_upper=self.config.light_spot_hsv_upper)
                 light_target, elapsed = timed_call(self.light_target_service.detect, self.current_frame, self.snapshot.roi)
                 self.snapshot.light_target = light_target; self._record_time('detect_light_target', elapsed); self.transition_to(PerceptionState.DETECT_VISUAL_MARKERS)
             elif self.state == PerceptionState.DETECT_VISUAL_MARKERS:

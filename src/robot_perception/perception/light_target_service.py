@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Optional, Sequence
 
 import cv2
 import numpy as np
@@ -10,10 +10,22 @@ from perception.console import info
 
 
 class LightTargetService:
-    def __init__(self, threshold: int = 230, min_area_px: float = 40.0) -> None:
+    def __init__(self, threshold: int = 230, min_area_px: float = 40.0, hsv_lower: Sequence[int] | None = None, hsv_upper: Sequence[int] | None = None) -> None:
         self.threshold = int(np.clip(threshold, 0, 255))
         self.min_area_px = max(float(min_area_px), 1.0)
-        info(f"Zainicjalizowano detekcję jasnej plamy (threshold={self.threshold}, min_area={self.min_area_px:.1f}px).")
+        self.hsv_lower, self.hsv_upper = self._normalize_hsv_bounds(hsv_lower, hsv_upper)
+        color_filter_status = f"hsv={self.hsv_lower.tolist()}..{self.hsv_upper.tolist()}" if self.hsv_lower is not None and self.hsv_upper is not None else "hsv=off"
+        info(f"Zainicjalizowano detekcję jasnej plamy (threshold={self.threshold}, min_area={self.min_area_px:.1f}px, {color_filter_status}).")
+
+    @staticmethod
+    def _normalize_hsv_bounds(hsv_lower: Sequence[int] | None, hsv_upper: Sequence[int] | None) -> tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+        if hsv_lower is None or hsv_upper is None:
+            return None, None
+        if len(hsv_lower) != 3 or len(hsv_upper) != 3:
+            return None, None
+        lower = np.array([np.clip(int(hsv_lower[0]), 0, 179), np.clip(int(hsv_lower[1]), 0, 255), np.clip(int(hsv_lower[2]), 0, 255)], dtype=np.uint8)
+        upper = np.array([np.clip(int(hsv_upper[0]), 0, 179), np.clip(int(hsv_upper[1]), 0, 255), np.clip(int(hsv_upper[2]), 0, 255)], dtype=np.uint8)
+        return lower, upper
 
     def detect(self, frame_bgr: np.ndarray, roi: ROI | None = None) -> Optional[LightTarget]:
         if frame_bgr is None or frame_bgr.size == 0:
@@ -31,6 +43,10 @@ class LightTargetService:
             offset_x, offset_y = x0, y0
         gray = cv2.cvtColor(work, cv2.COLOR_BGR2GRAY)
         _, mask = cv2.threshold(gray, self.threshold, 255, cv2.THRESH_BINARY)
+        if self.hsv_lower is not None and self.hsv_upper is not None:
+            hsv = cv2.cvtColor(work, cv2.COLOR_BGR2HSV)
+            mask_color = cv2.inRange(hsv, self.hsv_lower, self.hsv_upper)
+            mask = cv2.bitwise_and(mask, mask_color)
         kernel = np.ones((3, 3), dtype=np.uint8)
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel, iterations=1)
         mask = cv2.morphologyEx(mask, cv2.MORPH_DILATE, kernel, iterations=1)

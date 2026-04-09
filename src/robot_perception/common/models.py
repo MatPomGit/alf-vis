@@ -153,3 +153,5 @@ class AppConfig(BaseModel):
     apriltag_reprojection_warn_px: float = 4.0
     light_spot_threshold: int = 230
     light_spot_min_area_px: float = 40.0
+    light_spot_hsv_lower: Optional[List[int]] = None
+    light_spot_hsv_upper: Optional[List[int]] = None
