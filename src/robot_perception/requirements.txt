@@ -1,8 +1,8 @@
+# Ten plik jest generowany z environment.yml.
+# Nie edytuj ręcznie: użyj skryptu scripts/sync_requirements.py.
+
 pydantic>=2.7
-numpy>=1.26
-opencv-python>=4.9
-open3d>=0.19
-ultralytics>=8.3
+open3d==0.19.0
+ultralytics==8.3.0
 pupil-apriltags>=1.0.4
-PyYAML>=6.0
-transforms3d>=0.4
+transforms3d>=0.4.2

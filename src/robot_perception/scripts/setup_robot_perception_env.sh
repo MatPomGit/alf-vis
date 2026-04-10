@@ -8,7 +8,8 @@ set -Eeuo pipefail
 # 1. Wykrywa katalog projektu.
 # 2. Instaluje Miniconda lokalnie do HOME, jeśli conda nie jest dostępna.
 # 3. Tworzy / aktualizuje środowisko Conda na podstawie environment.yml.
-# 4. Doinstalowuje wymagane biblioteki Python, których może brakować.
+# 4. Doinstalowuje wymagane biblioteki Python z requirements.txt
+#    generowanego z environment.yml.
 # 5. Próbuje podpiąć ROS2. Jeśli wykryje Ubuntu/Debian i ma sudo, może
 #    doinstalować podstawowe pakiety potrzebne do działania warstwy ROS2.
 # 6. Weryfikuje importy krytycznych bibliotek.
@@ -115,21 +116,12 @@ install_python_dependencies() {
   python -m pip install --upgrade pip setuptools wheel
 
   if [[ -f "${PROJECT_ROOT}/requirements.txt" ]]; then
-    # Instalacja zależności Python
+    # Instalacja zależności Python generowanych z canonical manifestu Conda.
     python -m pip install -r "${PROJECT_ROOT}/requirements.txt"
-
-    # Dodatkowe pakiety używane przez projekt
-    python -m pip install transforms3d
-
-    # Torch 2.11.0 wymaga setuptools < 82
-    python -m pip install "numpy==1.26.4" "setuptools<82" "transforms3d>=0.4.2"
-              
-    # Kontrola spójności środowiska
-    python -m pip check || true
   fi
 
-  # Dodatkowe zależności użyte w kodzie, które warto wymusić jawnie.
-  python -m pip install transforms3d
+  # Kontrola spójności środowiska (informacyjna, bez przerywania bootstrapu).
+  python -m pip check || true
 
   # tkinter zwykle jest pakietem systemowym, więc tylko informujemy.
   python - <<'PY'

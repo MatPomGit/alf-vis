@@ -72,6 +72,18 @@ pip install -e ".[all]"
 pip install -e ".[dev]"
 ```
 
+### Runtime for `src/robot_perception`
+
+Podprojekt `src/robot_perception` używa jednego canonical manifestu runtime:
+`src/robot_perception/environment.yml` (Conda). Plik
+`src/robot_perception/requirements.txt` jest generowany automatycznie:
+
+```bash
+python src/robot_perception/scripts/sync_requirements.py
+```
+
+To eliminuje ręczne, wielokrotne instalowanie tych samych pakietów.
+
 ---
 
 ## Running tests

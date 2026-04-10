@@ -52,17 +52,27 @@ Aktywuj środowisko:
 conda activate robot_perception
 ```
 
-## 4. Doinstalowanie pakietów, które nie są w `environment.yml`
+## 4. Canonical manifest runtime i polityka wersjonowania
 
-W projekcie są używane również pakiety Python, które zależą od środowiska ROS2 albo zostały użyte bez wpisania do `environment.yml`. Dlatego po aktywacji środowiska uruchom dodatkowo:
+W tym projekcie obowiązuje jedna kanoniczna definicja środowiska runtime:
+- `environment.yml` — **źródło prawdy** dla zależności uruchomieniowych,
+- `requirements.txt` — plik pomocniczy, **generowany automatycznie** z `environment.yml`.
+
+Polityka wersjonowania:
+- pakiety niekrytyczne: minimalne wersje (`>=`),
+- pakiety krytyczne runtime: piny deterministyczne:
+  - `numpy=1.26.4`,
+  - `opencv=4.9.0`,
+  - `open3d==0.19.0`,
+  - `ultralytics==8.3.0`.
+
+Po każdej zmianie `environment.yml` odśwież plik `requirements.txt`:
 
 ```bash
-pip install transforms3d
+python scripts/sync_requirements.py
 ```
 
-Jeżeli w Twoim środowisku Conda nie ma `tkinter`, doinstaluj go systemowo albo przez Condę.
-
-Przykład dla Condy:
+Jeżeli w Twoim środowisku Conda nie ma `tkinter`, doinstaluj go systemowo albo przez Condę:
 
 ```bash
 conda install -c conda-forge tk
