@@ -1,15 +1,17 @@
 from __future__ import annotations
+
 import argparse
+
+from common.env_guard import env_guard_enabled, validate_host_conda_env
 from common.utils import load_config
-from perception.camera_calibration_service import CameraCalibrationService
-from perception.camera_service import CameraService
-from perception.point_cloud_service import PointCloudService
-from perception.rgbd_service import RGBDService
-from perception.visual_marker_service import VisualMarkerService
 
 
 def run_markers(config_path: str) -> None:
     """Uruchamia detekcję markerów wizyjnych bez zależności od ROS2."""
+    from perception.camera_calibration_service import CameraCalibrationService
+    from perception.camera_service import CameraService
+    from perception.visual_marker_service import VisualMarkerService
+
     config = load_config(config_path)
     print("[URUCHOMIENIE MODUŁU] Start detekcji markerów wizyjnych...")
 
@@ -39,6 +41,11 @@ def run_markers(config_path: str) -> None:
 
 def run_rgbd(config_path: str) -> None:
     """Uruchamia budowę chmury punktów bez zależności od ROS2."""
+    from perception.camera_calibration_service import CameraCalibrationService
+    from perception.camera_service import CameraService
+    from perception.point_cloud_service import PointCloudService
+    from perception.rgbd_service import RGBDService
+
     config = load_config(config_path)
     print("[URUCHOMIENIE MODUŁU] Start przechwycenia RGB-D i budowy chmury punktów...")
 
@@ -80,7 +87,6 @@ def run_rgbd(config_path: str) -> None:
 def run_rtabmap_bridge(config_path: str) -> None:
     """Uruchamia mostek RTAB-Map. ROS2 jest importowane tylko tutaj."""
     import rclpy
-
     from common.ros_runtime import SharedRosContext
     from slam.ros2_node import SlamRosNode
     from slam.rtabmap_ros_bridge import RTABMapRosBridge
@@ -138,7 +144,20 @@ def main() -> None:
         choices=["markers", "rgbd", "rtabmap_bridge", "perception", "slam", "gui"],
     )
     parser.add_argument("--config", default="config/settings.yaml")
+    parser.add_argument(
+        "--guard-env",
+        action="store_true",
+        help=(
+            "Wymusza walidację środowiska Conda poza kontenerem. "
+            "Można też użyć flagi środowiskowej ROBOT_PERCEPTION_ENV_GUARD=1."
+        ),
+    )
     args = parser.parse_args()
+
+    if args.guard_env or env_guard_enabled():
+        is_valid, message = validate_host_conda_env()
+        if not is_valid:
+            raise RuntimeError(f"[ENV_GUARD] {message}")
 
     if args.module == "markers":
         run_markers(args.config)

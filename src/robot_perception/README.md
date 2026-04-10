@@ -16,6 +16,11 @@ Projekt zawiera:
 
 ## 1. Założenia środowiskowe
 
+### Conda-first policy (host)
+
+Na hoście wspieramy wyłącznie uruchamianie w środowisku `conda` `robot_perception`.
+Uruchomienia poza tym środowiskiem nie są wspierane i mogą zakończyć się błędem guardów środowiskowych.
+
 Poniższe instrukcje zakładają system Linux z już zainstalowanym ROS2. Projekt był pisany pod użycie z ROS2 i RTAB-Map jako zewnętrznym komponentem.
 
 Przed rozpoczęciem upewnij się, że masz:
@@ -46,7 +51,7 @@ Uruchom bootstrap środowiska:
 python bootstrap_conda.py
 ```
 
-Aktywuj środowisko:
+Aktywuj środowisko (krok wymagany, bez alternatyw hostowych):
 
 ```bash
 conda activate robot_perception
