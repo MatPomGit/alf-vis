@@ -90,6 +90,25 @@ Na hoście nie wspieramy uruchamiania bez aktywacji `conda activate robot_percep
 
 **Versioning for `src/robot_perception`:** wersja jest wyliczana automatycznie jako `0.1.<liczba_commitów_na_main>` i jest dostępna w CLI (`--version`) oraz GUI.
 
+### Docker Compose profiles (`src/robot_perception`)
+
+Dostępne są dwa profile:
+- `core` — uruchomienie offline na pliku MP4 (bez ROS2),
+- `ros-hw` — uruchomienie z ROS2, mostkami RTAB-Map i urządzeniami `/dev`.
+
+Najpierw przygotuj zmienne:
+
+```bash
+cp .env.example .env
+```
+
+Uruchomienia:
+
+```bash
+docker compose --profile core run --rm robot-perception-core
+docker compose --profile ros-hw run --rm robot-perception-ros-hw
+```
+
 ---
 
 ## Running tests

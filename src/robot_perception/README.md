@@ -29,6 +29,49 @@ Przed rozpoczęciem upewnij się, że masz:
 - dostęp do topiców RTAB-Map, jeśli chcesz uruchamiać warstwę SLAM bridge,
 - kamerę RGB, a opcjonalnie także depth source.
 
+## 1.1. Profile Docker Compose
+
+W projekcie są zdefiniowane dwa profile uruchomieniowe:
+
+- `core` — tryb offline MP4, bez ROS2 i bez dostępu do urządzeń `/dev`,
+- `ros-hw` — tryb ROS2 + mostki SLAM/RTAB-Map + dostęp do urządzeń `/dev`.
+
+Przed uruchomieniem skopiuj plik przykładowy zmiennych:
+
+```bash
+cp .env.example .env
+```
+
+### Checklista dla profilu `ros-hw`
+
+Przed startem `ros-hw` sprawdź:
+
+- [ ] czy wskazana dystrybucja ROS jest dostępna (`ROS_DISTRO` w `.env`),
+- [ ] czy są widoczne topici RTAB-Map (`RTABMAP_ODOM_TOPIC`, `RTABMAP_MAPDATA_TOPIC`, `RTABMAP_LOCALIZATION_TOPIC`),
+- [ ] czy użytkownik ma uprawnienia do urządzeń kamery (`/dev/video*`).
+
+Szybka weryfikacja na hoście:
+
+```bash
+source /opt/ros/${ROS_DISTRO}/setup.bash
+ros2 topic list | grep rtabmap
+ls -l /dev/video*
+```
+
+### Przykłady uruchomienia profili
+
+Profil `core` (offline MP4, bez ROS2):
+
+```bash
+docker compose --profile core run --rm robot-perception-core
+```
+
+Profil `ros-hw` (ROS2 + RTAB-Map bridge + `/dev`):
+
+```bash
+docker compose --profile ros-hw run --rm robot-perception-ros-hw
+```
+
 ## Wersjonowanie aplikacji
 
 Wersja aplikacji jest wyliczana automatycznie na podstawie liczby commitów na gałęzi `main`:
