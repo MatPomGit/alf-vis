@@ -74,6 +74,8 @@ pip install -e ".[dev]"
 
 ### Runtime for `src/robot_perception`
 
+**Conda-first policy (host):** jedyną wspieraną ścieżką uruchomienia na hoście jest aktywne środowisko `conda` o nazwie `robot_perception`.
+
 Podprojekt `src/robot_perception` używa jednego canonical manifestu runtime:
 `src/robot_perception/environment.yml` (Conda). Plik
 `src/robot_perception/requirements.txt` jest generowany automatycznie:
@@ -83,6 +85,10 @@ python src/robot_perception/scripts/sync_requirements.py
 ```
 
 To eliminuje ręczne, wielokrotne instalowanie tych samych pakietów.
+
+Na hoście nie wspieramy uruchamiania bez aktywacji `conda activate robot_perception`.
+
+**Versioning for `src/robot_perception`:** wersja jest wyliczana automatycznie jako `0.1.<liczba_commitów_na_main>` i jest dostępna w CLI (`--version`) oraz GUI.
 
 ---
 

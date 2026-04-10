@@ -16,6 +16,11 @@ Projekt zawiera:
 
 ## 1. Założenia środowiskowe
 
+### Conda-first policy (host)
+
+Na hoście wspieramy wyłącznie uruchamianie w środowisku `conda` `robot_perception`.
+Uruchomienia poza tym środowiskiem nie są wspierane i mogą zakończyć się błędem guardów środowiskowych.
+
 Poniższe instrukcje zakładają system Linux z już zainstalowanym ROS2. Projekt był pisany pod użycie z ROS2 i RTAB-Map jako zewnętrznym komponentem.
 
 Przed rozpoczęciem upewnij się, że masz:
@@ -23,6 +28,17 @@ Przed rozpoczęciem upewnij się, że masz:
 - działające ROS2,
 - dostęp do topiców RTAB-Map, jeśli chcesz uruchamiać warstwę SLAM bridge,
 - kamerę RGB, a opcjonalnie także depth source.
+
+## Wersjonowanie aplikacji
+
+Wersja aplikacji jest wyliczana automatycznie na podstawie liczby commitów na gałęzi `main`:
+- format: `0.1.<liczba_commitów_main>`,
+- z każdym nowym commitem na `main` numer rośnie automatycznie,
+- opcjonalnie można nadpisać wersję przez zmienną środowiskową `ROBOT_PERCEPTION_VERSION`.
+
+Wersja jest widoczna:
+- w CLI przez `--version` (np. `python main_perception.py --version`),
+- w GUI w tytule okna oraz pasku statusu.
 
 ## 2. Przejście do katalogu projektu
 
@@ -46,7 +62,7 @@ Uruchom bootstrap środowiska:
 python bootstrap_conda.py
 ```
 
-Aktywuj środowisko:
+Aktywuj środowisko (krok wymagany, bez alternatyw hostowych):
 
 ```bash
 conda activate robot_perception
