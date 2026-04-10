@@ -4,7 +4,7 @@ import argparse
 
 from common.env_guard import env_guard_enabled, validate_host_conda_env
 from common.utils import load_config
-from common.versioning import get_app_version
+from common.versioning import get_version_banner
 
 
 def run_markers(config_path: str) -> None:
@@ -138,16 +138,21 @@ def run_gui() -> None:
     gui_main()
 
 
+def run_version() -> None:
+    """Wypisuje numer wersji i autora bez uruchamiania modułów runtime."""
+    print(get_version_banner())
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--version",
         action="version",
-        version=f"robot_perception {get_app_version()}",
+        version=get_version_banner(),
     )
     parser.add_argument(
         "module",
-        choices=["markers", "rgbd", "rtabmap_bridge", "perception", "slam", "gui"],
+        choices=["markers", "rgbd", "rtabmap_bridge", "perception", "slam", "gui", "version"],
     )
     parser.add_argument("--config", default="config/settings.yaml")
     parser.add_argument(
@@ -177,6 +182,8 @@ def main() -> None:
         run_slam()
     elif args.module == "gui":
         run_gui()
+    elif args.module == "version":
+        run_version()
 
 
 if __name__ == "__main__":
