@@ -7,7 +7,7 @@ from tkinter import scrolledtext, ttk
 
 from common.ros_runtime import SharedRosContext
 from common.utils import load_config
-from common.versioning import get_app_version
+from common.versioning import get_app_metadata
 
 
 class App:
@@ -27,8 +27,12 @@ class App:
         self.SlamRuntime = SlamRuntime
 
         self.root = root
-        self.app_version = get_app_version()
-        self.root.title(f"Robot Perception Control Panel v{self.app_version}")
+        self.app_meta = get_app_metadata()
+        self.app_version = self.app_meta["version"]
+        self.app_author = self.app_meta["author"]
+        self.root.title(
+            f"Robot Perception Control Panel v{self.app_version} ({self.app_author})",
+        )
         self.root.geometry("1100x750")
 
         self.config = load_config("config/settings.yaml")
@@ -98,7 +102,9 @@ class App:
         self.modules_text = scrolledtext.ScrolledText(right, wrap=tk.WORD, height=30)
         self.modules_text.pack(fill=tk.BOTH, expand=True)
 
-        self.status_var = tk.StringVar(value=f"GUI gotowe. Wersja: {self.app_version}")
+        self.status_var = tk.StringVar(
+            value=f"GUI gotowe. Wersja: {self.app_version}. Autor: {self.app_author}",
+        )
         ttk.Label(self.root, textvariable=self.status_var).pack(fill=tk.X, padx=10, pady=(0, 10))
 
     def _ensure_perception(self) -> None:

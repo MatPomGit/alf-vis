@@ -81,7 +81,10 @@ Wersja aplikacji jest wyliczana automatycznie na podstawie liczby commitów na g
 
 Wersja jest widoczna:
 - w CLI przez `--version` (np. `python main_perception.py --version`),
+- w CLI przez szybki skrót `python run_module.py version`,
 - w GUI w tytule okna oraz pasku statusu.
+
+Autor aplikacji widoczny w metadanych CLI/GUI: `J2S`.
 
 ## 2. Przejście do katalogu projektu
 
