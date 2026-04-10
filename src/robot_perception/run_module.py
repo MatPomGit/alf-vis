@@ -4,6 +4,7 @@ import argparse
 
 from common.env_guard import env_guard_enabled, validate_host_conda_env
 from common.utils import load_config
+from common.versioning import get_app_version
 
 
 def run_markers(config_path: str) -> None:
@@ -139,6 +140,11 @@ def run_gui() -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"robot_perception {get_app_version()}",
+    )
     parser.add_argument(
         "module",
         choices=["markers", "rgbd", "rtabmap_bridge", "perception", "slam", "gui"],

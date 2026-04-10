@@ -3,11 +3,17 @@ from __future__ import annotations
 import argparse
 
 from common.env_guard import env_guard_enabled, validate_host_conda_env
+from common.versioning import get_app_version
 
 
 def parse_args() -> argparse.Namespace:
     """Parsuje argumenty startowe programu SLAM."""
     parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"robot_perception {get_app_version()}",
+    )
     parser.add_argument(
         "--guard-env",
         action="store_true",

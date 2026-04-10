@@ -29,6 +29,17 @@ Przed rozpoczęciem upewnij się, że masz:
 - dostęp do topiców RTAB-Map, jeśli chcesz uruchamiać warstwę SLAM bridge,
 - kamerę RGB, a opcjonalnie także depth source.
 
+## Wersjonowanie aplikacji
+
+Wersja aplikacji jest wyliczana automatycznie na podstawie liczby commitów na gałęzi `main`:
+- format: `0.1.<liczba_commitów_main>`,
+- z każdym nowym commitem na `main` numer rośnie automatycznie,
+- opcjonalnie można nadpisać wersję przez zmienną środowiskową `ROBOT_PERCEPTION_VERSION`.
+
+Wersja jest widoczna:
+- w CLI przez `--version` (np. `python main_perception.py --version`),
+- w GUI w tytule okna oraz pasku statusu.
+
 ## 2. Przejście do katalogu projektu
 
 Najpierw przejdź do katalogu projektu:

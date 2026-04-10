@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 
 from common.env_guard import env_guard_enabled, validate_host_conda_env
+from common.versioning import get_app_version
 
 
 def parse_args() -> argparse.Namespace:
@@ -18,6 +19,11 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument("--config", default="config/settings.yaml")
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"robot_perception {get_app_version()}",
+    )
     parser.add_argument(
         "--guard-env",
         action="store_true",

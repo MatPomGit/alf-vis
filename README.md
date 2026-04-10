@@ -88,6 +88,8 @@ To eliminuje ręczne, wielokrotne instalowanie tych samych pakietów.
 
 Na hoście nie wspieramy uruchamiania bez aktywacji `conda activate robot_perception`.
 
+**Versioning for `src/robot_perception`:** wersja jest wyliczana automatycznie jako `0.1.<liczba_commitów_na_main>` i jest dostępna w CLI (`--version`) oraz GUI.
+
 ---
 
 ## Running tests
