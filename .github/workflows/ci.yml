@@ -28,6 +28,9 @@ jobs:
       - name: Install dependencies
         run: pip install -e ".[dev]"
 
+      - name: Check runtime manifest drift (robot_perception)
+        run: python src/robot_perception/scripts/sync_requirements.py --check
+
       - name: Lint (ruff)
         run: ruff check src/ tests/
 
