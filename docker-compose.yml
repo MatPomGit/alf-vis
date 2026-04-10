@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  robot-perception-core:
+    # Profil core: środowisko percepcji bez zależności ROS2.
+    profiles: ["core"]
+    build:
+      context: .
+      dockerfile: src/robot_perception/Dockerfile
+    image: robot-perception:core
+    working_dir: /workspace/robot_perception
+    # Montujemy kod źródłowy oraz katalog wyników.
+    volumes:
+      - ./src/robot_perception:/workspace/robot_perception
+      - ./output:/workspace/robot_perception/output
+    # Opcjonalne mapowanie urządzeń kamery z hosta.
+    devices:
+      - /dev/video0:/dev/video0
+    environment:
+      - PYTHONUNBUFFERED=1
+    entrypoint: ["micromamba", "run", "-n", "robot_perception"]
+    command: ["python", "main_perception.py", "--source", "rgb"]
+
+  robot-perception-ros:
+    # Profil ros: uruchomienie z mostkiem ROS2 i dodatkowymi zależnościami systemowymi.
+    profiles: ["ros"]
+    build:
+      context: .
+      dockerfile: src/robot_perception/Dockerfile
+    image: robot-perception:ros
+    working_dir: /workspace/robot_perception
+    volumes:
+      - ./src/robot_perception:/workspace/robot_perception
+      - ./output:/workspace/robot_perception/output
+    devices:
+      - /dev/video0:/dev/video0
+    # Dla GPU (opcjonalnie): odkomentuj device_requests poniżej dla Docker Engine z obsługą NVIDIA.
+    # device_requests:
+    #   - driver: nvidia
+    #     count: all
+    #     capabilities: ["gpu"]
+    environment:
+      - PYTHONUNBUFFERED=1
+      - ROS_DISTRO=humble
+    entrypoint: ["/bin/bash", "-lc"]
+    command:
+      - >-
+        source /opt/ros/${ROS_DISTRO}/setup.bash
+        && micromamba run -n robot_perception python main_slam.py
