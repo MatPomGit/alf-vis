@@ -7,6 +7,7 @@ from tkinter import scrolledtext, ttk
 
 from common.ros_runtime import SharedRosContext
 from common.utils import load_config
+from common.versioning import get_app_version
 
 
 class App:
@@ -26,7 +27,8 @@ class App:
         self.SlamRuntime = SlamRuntime
 
         self.root = root
-        self.root.title("Robot Perception Control Panel")
+        self.app_version = get_app_version()
+        self.root.title(f"Robot Perception Control Panel v{self.app_version}")
         self.root.geometry("1100x750")
 
         self.config = load_config("config/settings.yaml")
@@ -54,11 +56,31 @@ class App:
             state="readonly",
         ).pack(side=tk.LEFT, padx=5)
 
-        ttk.Button(top, text="Uruchom percepcję", command=self.start_perception).pack(side=tk.LEFT, padx=5)
-        ttk.Button(top, text="Zatrzymaj percepcję", command=self.stop_perception).pack(side=tk.LEFT, padx=5)
-        ttk.Button(top, text="Uruchom SLAM bridge", command=self.start_slam).pack(side=tk.LEFT, padx=5)
-        ttk.Button(top, text="Zatrzymaj SLAM bridge", command=self.stop_slam).pack(side=tk.LEFT, padx=5)
-        ttk.Button(top, text="Wykonaj jeden krok FSM", command=self.step_once).pack(side=tk.LEFT, padx=5)
+        ttk.Button(
+            top,
+            text="Uruchom percepcję",
+            command=self.start_perception,
+        ).pack(side=tk.LEFT, padx=5)
+        ttk.Button(
+            top,
+            text="Zatrzymaj percepcję",
+            command=self.stop_perception,
+        ).pack(side=tk.LEFT, padx=5)
+        ttk.Button(
+            top,
+            text="Uruchom SLAM bridge",
+            command=self.start_slam,
+        ).pack(side=tk.LEFT, padx=5)
+        ttk.Button(
+            top,
+            text="Zatrzymaj SLAM bridge",
+            command=self.stop_slam,
+        ).pack(side=tk.LEFT, padx=5)
+        ttk.Button(
+            top,
+            text="Wykonaj jeden krok FSM",
+            command=self.step_once,
+        ).pack(side=tk.LEFT, padx=5)
 
         middle = ttk.Panedwindow(self.root, orient=tk.HORIZONTAL)
         middle.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -76,7 +98,7 @@ class App:
         self.modules_text = scrolledtext.ScrolledText(right, wrap=tk.WORD, height=30)
         self.modules_text.pack(fill=tk.BOTH, expand=True)
 
-        self.status_var = tk.StringVar(value="GUI gotowe.")
+        self.status_var = tk.StringVar(value=f"GUI gotowe. Wersja: {self.app_version}")
         ttk.Label(self.root, textvariable=self.status_var).pack(fill=tk.X, padx=10, pady=(0, 10))
 
     def _ensure_perception(self) -> None:
@@ -102,7 +124,11 @@ class App:
             self.modules_text.delete("1.0", tk.END)
             self.modules_text.insert(
                 tk.END,
-                json.dumps(self.perception_machine.last_module_inputs, indent=2, ensure_ascii=False),
+                json.dumps(
+                    self.perception_machine.last_module_inputs,
+                    indent=2,
+                    ensure_ascii=False,
+                ),
             )
 
         self.root.after(500, self.refresh_debug)
@@ -118,7 +144,11 @@ class App:
     def _perception_loop(self) -> None:
         import rclpy
 
-        while self.running_perception and self.perception_machine is not None and self.perception_node is not None:
+        while (
+            self.running_perception
+            and self.perception_machine is not None
+            and self.perception_node is not None
+        ):
             self.perception_machine.run_once()
             rclpy.spin_once(self.perception_node, timeout_sec=0.01)
 
