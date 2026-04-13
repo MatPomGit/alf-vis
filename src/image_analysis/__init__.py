@@ -9,6 +9,10 @@ Import specific functionality directly from submodules, e.g.
 __all__ = [
     "KalmanMultiObjectTracker",
     "TrackedObject",
+    "get_array_backend",
+    "is_pyscript_runtime",
+    "run_pywebio_app",
+    "to_numpy",
 ]
 
 
@@ -21,4 +25,21 @@ def __getattr__(name: str) -> object:
             "TrackedObject": TrackedObject,
         }
         return exports[name]
+    if name in {"get_array_backend", "is_pyscript_runtime", "to_numpy"}:
+        from image_analysis.array_backend import (
+            get_array_backend,
+            is_pyscript_runtime,
+            to_numpy,
+        )
+
+        exports = {
+            "get_array_backend": get_array_backend,
+            "is_pyscript_runtime": is_pyscript_runtime,
+            "to_numpy": to_numpy,
+        }
+        return exports[name]
+    if name == "run_pywebio_app":
+        from image_analysis.pywebio_app import run_pywebio_app
+
+        return run_pywebio_app
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
