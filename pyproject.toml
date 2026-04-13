@@ -38,12 +38,24 @@ yolo = [
 "3d" = [
     "open3d>=0.17",
 ]
+# GPU arrays and acceleration for NumPy-like workflows
+gpu = [
+    "cupy-cuda12x>=13.0",
+]
+# Browser runtime support based on PyScript
+web = [
+    "pyscript>=2025.3.1",
+    "pywebio>=1.8.3",
+]
 # Full installation (all optional features)
 all = [
     "pupil-apriltags>=1.0",
     "pyzbar>=0.1.10",
     "ultralytics>=8.0",
     "open3d>=0.17",
+    "cupy-cuda12x>=13.0",
+    "pyscript>=2025.3.1",
+    "pywebio>=1.8.3",
 ]
 # Experimental demos – all dependencies needed to run programs in experimental/
 experimental = [

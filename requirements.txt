@@ -5,6 +5,8 @@
 #   markers  – AprilTag, QR code: pip install -e ".[markers]"
 #   yolo     – YOLO object detection: pip install -e ".[yolo]"
 #   3d       – Open3D point clouds, SLAM: pip install -e ".[3d]"
+#   gpu      – CuPy acceleration: pip install -e ".[gpu]"
+#   web      – PyScript + PyWebIO UI: pip install -e ".[web]"
 
 numpy>=1.26
 opencv-python-headless>=4.9

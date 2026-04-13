@@ -57,13 +57,30 @@ pip install -e .
 | `markers` | `pupil-apriltags`, `pyzbar` | AprilTag + QR detection |
 | `yolo` | `ultralytics` | YOLO object detection |
 | `3d` | `open3d` | Point clouds, SLAM, plane detection |
+| `gpu` | `cupy-cuda12x` | GPU-accelerated NumPy-like arrays (CuPy) |
+| `web` | `pyscript`, `pywebio` | Browser runtime + lightweight web UI |
 | `all` | all of the above | Full installation |
 
 ```bash
 pip install -e ".[markers]"
 pip install -e ".[yolo]"
 pip install -e ".[3d]"
+pip install -e ".[gpu]"
+pip install -e ".[web]"
 pip install -e ".[all]"
+```
+
+Pakiet udostępnia też pomocnicze API dla nowych środowisk:
+- `image_analysis.get_array_backend(prefer_gpu=True)` — zwraca `cupy` (gdy dostępne) lub `numpy`,
+- `image_analysis.is_pyscript_runtime()` — wykrywa runtime PyScript/Pyodide,
+- `image_analysis.to_numpy(...)` — konwertuje bufor NumPy/CuPy do `numpy.ndarray`.
+
+Szybki interfejs webowy (PyWebIO) uruchomisz z poziomu Pythona:
+
+```python
+from image_analysis import run_pywebio_app
+
+run_pywebio_app()  # start serwera na porcie 8080
 ```
 
 ### Development
