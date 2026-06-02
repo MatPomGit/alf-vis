@@ -9,7 +9,7 @@ rs = RealSense()
 world = WorldMap()
 model = YOLO("yolov8n.pt")
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(4)
 
 while True:
     ret, frame = cap.read()

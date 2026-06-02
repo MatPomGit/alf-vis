@@ -18,6 +18,7 @@ installed.
 """
 
 from __future__ import annotations
+import matplotlib.pyplot as plt
 
 import logging
 from typing import List, Optional, Tuple, TYPE_CHECKING
@@ -151,7 +152,6 @@ class SlamView3D:
                 return
 
         try:
-            import matplotlib.pyplot as plt
 
             self._ax.cla()  # For simplicity; can be optimised later
             self._ax.set_xlabel("X (cm)")

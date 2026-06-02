@@ -16,7 +16,7 @@ class RealSense:
         self.config.enable_stream(rs.stream.color,640,480, rs.format.bgr8,30)
         self.profile = self.pipeline.start(self.config)
         self.align = rs.align(rs.stream.color)
-        intr = self.profile.get_stream(rs.stream.color)            .as_video_stream_profile().get_intrinsics()
+        intr = self.profile.get_stream(rs.stream.color).as_video_stream_profile().get_intrinsics()
         self.fx, self.fy, self.cx, self.cy = intr.fx, intr.fy, intr.ppx, intr.ppy
 
     def get_frame(self):
