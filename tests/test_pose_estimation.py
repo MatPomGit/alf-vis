@@ -20,12 +20,12 @@ from image_analysis.pose_estimation import (
 @pytest.fixture
 def calibration() -> CalibrationResult:
     """Return a synthetic camera calibration."""
-    K = np.array(
+    camera_matrix = np.array(
         [[500.0, 0.0, 320.0], [0.0, 500.0, 240.0], [0.0, 0.0, 1.0]], dtype=np.float64
     )
-    D = np.zeros((1, 5), dtype=np.float64)
+    dist_coeffs = np.zeros((1, 5), dtype=np.float64)
     return CalibrationResult(
-        camera_matrix=K, dist_coeffs=D, rms_error=0.2, image_size=(640, 480)
+        camera_matrix=camera_matrix, dist_coeffs=dist_coeffs, rms_error=0.2, image_size=(640, 480)
     )
 
 
@@ -94,8 +94,8 @@ class TestEstimatePoseFromMarker:
     ) -> None:
         pose = estimate_pose_from_marker(square_marker, calibration)
         # Rotation matrix should be orthogonal.
-        RtR = pose.rotation_matrix.T @ pose.rotation_matrix
-        np.testing.assert_allclose(RtR, np.eye(3), atol=1e-5)
+        rotation_gram = pose.rotation_matrix.T @ pose.rotation_matrix
+        np.testing.assert_allclose(rotation_gram, np.eye(3), atol=1e-5)
 
 
 class TestEstimatePosesFromMarkers:
