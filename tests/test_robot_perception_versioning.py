@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from pathlib import Path
 import sys
+from pathlib import Path
 
 
 # Dodajemy katalog projektu robot_perception do sys.path,
