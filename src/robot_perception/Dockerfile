@@ -22,7 +22,7 @@ RUN micromamba create --yes --file environment.yml && \
     micromamba clean --all --yes
 
 # Instalujemy tylko te zależności pip, które nie są już pokryte przez environment.yml.
-RUN python - <<'PY' > /tmp/pip_extra_requirements.txt
+RUN micromamba run -n ${ENV_NAME} python - <<'PY' > /tmp/pip_extra_requirements.txt
 from __future__ import annotations
 
 import pathlib
