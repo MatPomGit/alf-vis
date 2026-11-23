@@ -2,10 +2,6 @@ from __future__ import annotations
 
 import argparse
 
-from common.utils import load_config
-from perception.state_machine import RobotPerceptionStateMachine
-from perception.video_file_camera_service import VideoFileCameraService
-
 
 class OfflineRosNode:
     def publish_snapshot(self, snapshot) -> None:
@@ -33,6 +29,13 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+
+    # Parse --help before importing ROS-dependent runtime modules. This keeps
+    # the command-line interface inspectable in the base Docker profile.
+    from common.utils import load_config
+    from perception.state_machine import RobotPerceptionStateMachine
+    from perception.video_file_camera_service import VideoFileCameraService
+
     config = load_config(args.config)
 
     video_camera = VideoFileCameraService(args.video, output_dir=config.output_dir)
