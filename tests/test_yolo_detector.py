@@ -57,7 +57,8 @@ class TestParseUltralyticsResults:
     def test_result_without_boxes_returns_empty_list(self) -> None:
         class FakeResult:
             boxes = None
-            names: dict = {}
+            def __init__(self) -> None:
+                self.names: dict = {}
 
         result = _parse_ultralytics_results([FakeResult()])
         assert result == []
