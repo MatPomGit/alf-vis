@@ -3,6 +3,15 @@
 # Bazowy obraz Linux z Micromambą do szybkiego tworzenia środowisk Conda.
 FROM mambaorg/micromamba:2.0.5
 
+# OpenCV/Open3D import shared EGL/OpenGL libraries that are absent from the
+# minimal micromamba base image. Install runtime libraries, not build toolchains.
+USER root
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      libegl1 libgl1 libglib2.0-0 libsm6 libxext6 libxrender1 && \
+    rm -rf /var/lib/apt/lists/*
+USER $MAMBA_USER
+
 # Używamy basha z pipefail dla bezpieczniejszego wykonywania kroków builda.
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
