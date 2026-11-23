@@ -8,7 +8,12 @@ from pathlib import Path
 import numpy as np
 
 
-MODULE_PATH = Path(__file__).resolve().parents[1] / "experimental" / "demo_yolo_utils" / "camera_yolo.py"
+MODULE_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "experimental"
+    / "demo_yolo_utils"
+    / "camera_yolo.py"
+)
 
 
 def _load_module():
