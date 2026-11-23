@@ -18,9 +18,8 @@ COPY src/robot_perception/requirements.txt ./requirements.txt
 
 # Tworzymy lub aktualizujemy środowisko Conda.
 # Jeśli środowisko już istnieje, używamy update --prune, aby utrzymać zgodność z YAML.
-RUN micromamba env list | grep -q "^${ENV_NAME}[[:space:]]" \
-    && micromamba run -n base conda env update -n ${ENV_NAME} -f environment.yml --prune \
-    || micromamba run -n base conda env create -f environment.yml
+RUN micromamba create --yes --file environment.yml && \
+    micromamba clean --all --yes
 
 # Instalujemy tylko te zależności pip, które nie są już pokryte przez environment.yml.
 RUN python - <<'PY' > /tmp/pip_extra_requirements.txt
