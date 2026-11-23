@@ -92,7 +92,7 @@ jobs:
         env:
           IMAGE_REF: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
         run: |
-          docker run --rm "$IMAGE_REF" python - <<'PY'
+          docker run --rm -i "$IMAGE_REF" python - <<'PY'
           import cv2
           import numpy
           import open3d
@@ -106,7 +106,7 @@ jobs:
         env:
           IMAGE_REF: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
         run: |
-          docker run --rm "$IMAGE_REF" python - <<'PY'
+          docker run --rm -i "$IMAGE_REF" python - <<'PY'
           import rclpy
 
           print("OK: import rclpy działa dla profilu ROS")
