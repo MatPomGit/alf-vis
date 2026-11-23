@@ -17,7 +17,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Konfiguracja podstawowych ścieżek roboczych obrazu.
 ENV PROJECT_DIR=/workspace/robot_perception \
-    ENV_NAME=robot_perception
+    ENV_NAME=robot_perception \
+    PYTHONPATH=/workspace/robot_perception
 
 WORKDIR ${PROJECT_DIR}
 
