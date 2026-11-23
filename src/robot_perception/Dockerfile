@@ -3,12 +3,22 @@
 # Bazowy obraz Linux z Micromambą do szybkiego tworzenia środowisk Conda.
 FROM mambaorg/micromamba:2.0.5
 
+# OpenCV/Open3D import shared EGL/OpenGL libraries that are absent from the
+# minimal micromamba base image. Install runtime libraries, not build toolchains.
+USER root
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      libegl1 libgl1 libglib2.0-0 libsm6 libxext6 libxrender1 && \
+    rm -rf /var/lib/apt/lists/*
+USER $MAMBA_USER
+
 # Używamy basha z pipefail dla bezpieczniejszego wykonywania kroków builda.
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 # Konfiguracja podstawowych ścieżek roboczych obrazu.
 ENV PROJECT_DIR=/workspace/robot_perception \
-    ENV_NAME=robot_perception
+    ENV_NAME=robot_perception \
+    PYTHONPATH=/workspace/robot_perception
 
 WORKDIR ${PROJECT_DIR}
 
@@ -22,7 +32,7 @@ RUN micromamba create --yes --file environment.yml && \
     micromamba clean --all --yes
 
 # Instalujemy tylko te zależności pip, które nie są już pokryte przez environment.yml.
-RUN python - <<'PY' > /tmp/pip_extra_requirements.txt
+RUN micromamba run -n ${ENV_NAME} python - <<'PY' > /tmp/pip_extra_requirements.txt
 from __future__ import annotations
 
 import pathlib
