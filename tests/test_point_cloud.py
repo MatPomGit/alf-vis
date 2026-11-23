@@ -15,12 +15,12 @@ from image_analysis.point_cloud import (
 
 @pytest.fixture
 def calibration() -> CalibrationResult:
-    K = np.array(
+    camera_matrix = np.array(
         [[500.0, 0.0, 320.0], [0.0, 500.0, 240.0], [0.0, 0.0, 1.0]], dtype=np.float64
     )
-    D = np.zeros((1, 5), dtype=np.float64)
+    dist_coeffs = np.zeros((1, 5), dtype=np.float64)
     return CalibrationResult(
-        camera_matrix=K, dist_coeffs=D, rms_error=0.2, image_size=(640, 480)
+        camera_matrix=camera_matrix, dist_coeffs=dist_coeffs, rms_error=0.2, image_size=(640, 480)
     )
 
 
