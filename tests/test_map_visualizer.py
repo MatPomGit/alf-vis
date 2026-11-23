@@ -70,24 +70,26 @@ class TestCreateTrajectoryLineSet:
     def test_empty_trajectory_returns_empty(self) -> None:
         pts, lines = create_trajectory_line_set([])
         assert len(pts) == 0
+        assert len(lines) == 0
 
     def test_single_pose_returns_empty(self) -> None:
         pts, lines = create_trajectory_line_set([np.eye(4)])
+        assert len(pts) == 1
         assert len(lines) == 0
 
     def test_two_poses_give_one_line(self) -> None:
-        T0 = np.eye(4, dtype=np.float64)
-        T1 = np.eye(4, dtype=np.float64)
-        T1[:3, 3] = [1.0, 0.0, 0.0]
-        pts, lines = create_trajectory_line_set([T0, T1])
+        t0 = np.eye(4, dtype=np.float64)
+        t1 = np.eye(4, dtype=np.float64)
+        t1[:3, 3] = [1.0, 0.0, 0.0]
+        pts, lines = create_trajectory_line_set([t0, t1])
         assert pts.shape == (2, 3)
         assert lines.shape == (1, 2)
 
     def test_positions_extracted_correctly(self) -> None:
-        T0 = np.eye(4, dtype=np.float64)
-        T1 = np.eye(4, dtype=np.float64)
-        T1[:3, 3] = [3.0, 4.0, 5.0]
-        pts, _ = create_trajectory_line_set([T0, T1])
+        t0 = np.eye(4, dtype=np.float64)
+        t1 = np.eye(4, dtype=np.float64)
+        t1[:3, 3] = [3.0, 4.0, 5.0]
+        pts, _ = create_trajectory_line_set([t0, t1])
         np.testing.assert_array_equal(pts[0], [0.0, 0.0, 0.0])
         np.testing.assert_array_equal(pts[1], [3.0, 4.0, 5.0])
 
