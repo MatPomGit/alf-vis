@@ -115,6 +115,7 @@ class TestComputeDepthMetrics:
         coverage, mean, std = compute_depth_metrics(valid_depth)
         assert coverage == pytest.approx(1.0)
         assert mean == pytest.approx(2.0, abs=0.01)
+        assert std == pytest.approx(0.0)
 
     def test_partial_coverage(self, partial_depth: np.ndarray) -> None:
         coverage, _, _ = compute_depth_metrics(partial_depth)
@@ -125,6 +126,7 @@ class TestComputeDepthMetrics:
         coverage, mean, std = compute_depth_metrics(depth)
         assert coverage == pytest.approx(0.0)
         assert np.isnan(mean)
+        assert np.isnan(std)
 
     def test_raises_for_non_ndarray(self) -> None:
         with pytest.raises(TypeError):
