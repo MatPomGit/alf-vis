@@ -128,7 +128,7 @@ def main() -> None:
 
     fieldnames: List[str] = []
     for row in rows:
-        for key in row.keys():
+        for key in row:
             if key not in fieldnames:
                 fieldnames.append(key)
 
