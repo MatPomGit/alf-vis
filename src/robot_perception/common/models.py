@@ -1,13 +1,15 @@
 from __future__ import annotations
-from typing import Dict, List, Optional, Tuple
+
 from pydantic import BaseModel, ConfigDict, Field
+
 
 class ImageMeta(BaseModel):
     width: int
     height: int
     encoding: str = "bgr8"
-    fps: Optional[float] = None
+    fps: float | None = None
     camera_id: int = 0
+
 
 class DepthMeta(BaseModel):
     width: int
@@ -16,11 +18,13 @@ class DepthMeta(BaseModel):
     depth_scale: float = 1000.0
     depth_unit_m: float = 0.001
 
+
 class ROI(BaseModel):
     x: int
     y: int
     width: int
     height: int
+
 
 class Pose3D(BaseModel):
     x: float
@@ -30,64 +34,72 @@ class Pose3D(BaseModel):
     pitch: float = 0.0
     yaw: float = 0.0
 
+
 class CameraCalibration(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     image_width: int
     image_height: int
-    camera_matrix: List[List[float]]
-    distortion_coefficients: List[float]
-    calibration_rms: Optional[float] = None
+    camera_matrix: list[list[float]]
+    distortion_coefficients: list[float]
+    calibration_rms: float | None = None
+
 
 class VisualMarker(BaseModel):
     tag_id: int
     family: str
-    center: Tuple[float, float]
-    corners: List[Tuple[float, float]]
-    decision_margin: Optional[float] = None
-    hamming: Optional[int] = None
-    pose: Optional[Pose3D] = None
-    translation_vector: Optional[List[float]] = None
-    rotation_vector: Optional[List[float]] = None
-    reprojection_error_px: Optional[float] = None
-    pose_quality: Optional[str] = None
+    center: tuple[float, float]
+    corners: list[tuple[float, float]]
+    decision_margin: float | None = None
+    hamming: int | None = None
+    pose: Pose3D | None = None
+    translation_vector: list[float] | None = None
+    rotation_vector: list[float] | None = None
+    reprojection_error_px: float | None = None
+    pose_quality: str | None = None
+
 
 class LightTarget(BaseModel):
-    center_xy: Tuple[float, float]
-    axes_xy: Tuple[float, float]
+    center_xy: tuple[float, float]
+    axes_xy: tuple[float, float]
     angle_deg: float
     area_px: float
     contour_points: int
+
 
 class DetectedObject(BaseModel):
     label: str
     class_id: int
     confidence: float
-    bbox_xyxy: Tuple[float, float, float, float]
-    centroid_xy: Tuple[float, float]
+    bbox_xyxy: tuple[float, float, float, float]
+    centroid_xy: tuple[float, float]
     is_new: bool = False
+
 
 class TrackedObject(BaseModel):
     object_id: int
     label: str
     class_id: int
     confidence: float
-    bbox_xyxy: Tuple[float, float, float, float]
-    centroid_xy: Tuple[float, float]
-    velocity_xy: Tuple[float, float] = (0.0, 0.0)
-    kalman_state: List[float] = Field(default_factory=list)
+    bbox_xyxy: tuple[float, float, float, float]
+    centroid_xy: tuple[float, float]
+    velocity_xy: tuple[float, float] = (0.0, 0.0)
+    kalman_state: list[float] = Field(default_factory=list)
+
 
 class PointCloudData(BaseModel):
     coordinate_frame: str = "map"
-    points: List[Tuple[float, float, float]] = Field(default_factory=list)
-    colors: List[Tuple[float, float, float]] = Field(default_factory=list)
+    points: list[tuple[float, float, float]] = Field(default_factory=list)
+    colors: list[tuple[float, float, float]] = Field(default_factory=list)
+
     @property
     def point_count(self) -> int:
         return len(self.points)
 
+
 class SlamStatus(BaseModel):
     initialized: bool = False
     status: str = "NOT_INITIALIZED"
-    pose: Optional[Pose3D] = None
+    pose: Pose3D | None = None
     map_point_count: int = 0
     odom_lost: bool = False
     inliers: int = 0
@@ -96,33 +108,35 @@ class SlamStatus(BaseModel):
     loop_closure_id: int = 0
     map_to_odom_available: bool = False
     camera_to_map_available: bool = False
-    database_path: Optional[str] = None
+    database_path: str | None = None
+
 
 class PerceptionSnapshot(BaseModel):
     model_config = ConfigDict(arbitrary_types_allowed=True)
     frame_id: int = 0
     timestamp_sec: float = 0.0
     camera_id: int = 0
-    image_path: Optional[str] = None
-    depth_path: Optional[str] = None
-    image_meta: Optional[ImageMeta] = None
-    depth_meta: Optional[DepthMeta] = None
-    calibration: Optional[CameraCalibration] = None
-    roi: Optional[ROI] = None
-    light_target: Optional[LightTarget] = None
-    markers: List[VisualMarker] = Field(default_factory=list)
-    humans: List[DetectedObject] = Field(default_factory=list)
-    obstacles: List[DetectedObject] = Field(default_factory=list)
-    new_objects: List[DetectedObject] = Field(default_factory=list)
-    tracked_objects: List[TrackedObject] = Field(default_factory=list)
+    image_path: str | None = None
+    depth_path: str | None = None
+    image_meta: ImageMeta | None = None
+    depth_meta: DepthMeta | None = None
+    calibration: CameraCalibration | None = None
+    roi: ROI | None = None
+    light_target: LightTarget | None = None
+    markers: list[VisualMarker] = Field(default_factory=list)
+    humans: list[DetectedObject] = Field(default_factory=list)
+    obstacles: list[DetectedObject] = Field(default_factory=list)
+    new_objects: list[DetectedObject] = Field(default_factory=list)
+    tracked_objects: list[TrackedObject] = Field(default_factory=list)
     slam: SlamStatus = Field(default_factory=SlamStatus)
     path_deviation_detected: bool = False
     path_deviation_value: float = 0.0
     point_cloud: PointCloudData = Field(default_factory=PointCloudData)
-    point_cloud_save_path: Optional[str] = None
-    processing_times_ms: Dict[str, float] = Field(default_factory=dict)
+    point_cloud_save_path: str | None = None
+    processing_times_ms: dict[str, float] = Field(default_factory=dict)
     system_ok: bool = True
-    error_message: Optional[str] = None
+    error_message: str | None = None
+
 
 class AppConfig(BaseModel):
     camera_id: int = 0
@@ -153,5 +167,5 @@ class AppConfig(BaseModel):
     apriltag_reprojection_warn_px: float = 4.0
     light_spot_threshold: int = 230
     light_spot_min_area_px: float = 40.0
-    light_spot_hsv_lower: Optional[List[int]] = None
-    light_spot_hsv_upper: Optional[List[int]] = None
+    light_spot_hsv_lower: list[int] | None = None
+    light_spot_hsv_upper: list[int] | None = None
