@@ -2,6 +2,7 @@
 
 This module implements only the subset of OpenCV used by this repository's
 unit tests. It is *not* a complete replacement for OpenCV.
+Names matching the OpenCV API intentionally retain its original casing.
 """
 
 from __future__ import annotations
@@ -108,7 +109,7 @@ def resize(image: np.ndarray, dsize: tuple[int, int], interpolation: int = INTER
     return out[..., ::-1]
 
 
-def cvtColor(image: np.ndarray, code: int) -> np.ndarray:
+def cvtColor(image: np.ndarray, code: int) -> np.ndarray:  # noqa: N802
     if code == COLOR_BGR2GRAY:
         b, g, r = image[..., 0], image[..., 1], image[..., 2]
         return (0.114 * b + 0.587 * g + 0.299 * r).astype(np.uint8)
@@ -122,7 +123,7 @@ def cvtColor(image: np.ndarray, code: int) -> np.ndarray:
     raise ValueError(f"Unsupported conversion code: {code}")
 
 
-def GaussianBlur(image: np.ndarray, ksize: tuple[int, int], sigma_x: float) -> np.ndarray:  # noqa: ARG001
+def GaussianBlur(image: np.ndarray, ksize: tuple[int, int], sigma_x: float) -> np.ndarray:  # noqa: N802
     k = np.array([[1, 4, 6, 4, 1]], dtype=np.float32)
     k = (k.T @ k) / 256.0
     pad = ksize[0] // 2
@@ -135,7 +136,7 @@ def GaussianBlur(image: np.ndarray, ksize: tuple[int, int], sigma_x: float) -> n
     return out.astype(image.dtype)
 
 
-def Laplacian(image: np.ndarray, ddepth: Any) -> np.ndarray:  # noqa: ARG001
+def Laplacian(image: np.ndarray, ddepth: Any) -> np.ndarray:  # noqa: N802
     kernel = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
     padded = np.pad(image.astype(np.float32), 1, mode="edge")
     out = np.zeros_like(image, dtype=np.float32)
@@ -145,7 +146,7 @@ def Laplacian(image: np.ndarray, ddepth: Any) -> np.ndarray:  # noqa: ARG001
     return out.astype(np.float64)
 
 
-def applyColorMap(gray: np.ndarray, colormap: int = COLORMAP_JET) -> np.ndarray:  # noqa: ARG001
+def applyColorMap(gray: np.ndarray, colormap: int = COLORMAP_JET) -> np.ndarray:  # noqa: N802
     g = gray.astype(np.float32) / 255.0
     r = np.clip(1.5 - np.abs(4 * g - 3), 0, 1)
     gch = np.clip(1.5 - np.abs(4 * g - 2), 0, 1)
@@ -153,11 +154,11 @@ def applyColorMap(gray: np.ndarray, colormap: int = COLORMAP_JET) -> np.ndarray:
     return (np.stack([b, gch, r], axis=-1) * 255).astype(np.uint8)
 
 
-def putText(image: np.ndarray, *_: Any, **__: Any) -> np.ndarray:
+def putText(image: np.ndarray, *_: Any, **__: Any) -> np.ndarray:  # noqa: N802
     return image
 
 
-def arrowedLine(image: np.ndarray, pt1: tuple[int, int], pt2: tuple[int, int], color: tuple[int, int, int], thickness: int, tipLength: float = 0.1) -> np.ndarray:  # noqa: ARG001,N803
+def arrowedLine(image: np.ndarray, pt1: tuple[int, int], pt2: tuple[int, int], color: tuple[int, int, int], thickness: int, tipLength: float = 0.1) -> np.ndarray:  # noqa: N803, N802
     x1, y1 = pt1
     x2, y2 = pt2
     n = max(abs(x2 - x1), abs(y2 - y1), 1)
@@ -181,7 +182,7 @@ def imencode(ext: str, image: np.ndarray, params: list[int] | None = None) -> tu
     return True, data
 
 
-def waitKey(delay: int) -> int:  # noqa: N802, ARG001
+def waitKey(delay: int) -> int:  # noqa: N802
     return -1
 
 
@@ -189,19 +190,19 @@ def imshow(*_: Any) -> None:
     return None
 
 
-def destroyAllWindows() -> None:
+def destroyAllWindows() -> None:  # noqa: N802
     return None
 
 
-def findChessboardCorners(*_: Any) -> tuple[bool, None]:
+def findChessboardCorners(*_: Any) -> tuple[bool, None]:  # noqa: N802
     return False, None
 
 
-def cornerSubPix(image: np.ndarray, corners: np.ndarray, *_: Any) -> np.ndarray:  # noqa: ARG001
+def cornerSubPix(image: np.ndarray, corners: np.ndarray, *_: Any) -> np.ndarray:  # noqa: N802
     return corners
 
 
-def calibrateCamera(obj_points: list[np.ndarray], img_points: list[np.ndarray], image_size: tuple[int, int], *_: Any) -> tuple[float, np.ndarray, np.ndarray, list[np.ndarray], list[np.ndarray]]:  # noqa: ARG001
+def calibrateCamera(obj_points: list[np.ndarray], img_points: list[np.ndarray], image_size: tuple[int, int], *_: Any) -> tuple[float, np.ndarray, np.ndarray, list[np.ndarray], list[np.ndarray]]:  # noqa: N802
     k = np.array([[500.0, 0.0, image_size[0] / 2], [0.0, 500.0, image_size[1] / 2], [0.0, 0.0, 1.0]], dtype=np.float64)
     d = np.zeros((1, 5), dtype=np.float64)
     rvecs = [np.zeros((3, 1), dtype=np.float64) for _ in img_points]
@@ -213,7 +214,7 @@ def undistort(image: np.ndarray, *_: Any) -> np.ndarray:
     return image.copy()
 
 
-def Rodrigues(src: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+def Rodrigues(src: np.ndarray) -> tuple[np.ndarray, np.ndarray]:  # noqa: N802
     vec = np.asarray(src, dtype=np.float64).reshape(-1)
     theta = np.linalg.norm(vec)
     if theta < 1e-12:
@@ -225,7 +226,7 @@ def Rodrigues(src: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
     return r, np.zeros((9, 3), dtype=np.float64)
 
 
-def solvePnP(object_points: np.ndarray, image_points: np.ndarray, camera_matrix: np.ndarray, dist_coeffs: np.ndarray, flags: int = SOLVEPNP_IPPE_SQUARE) -> tuple[bool, np.ndarray, np.ndarray]:  # noqa: ARG001
+def solvePnP(object_points: np.ndarray, image_points: np.ndarray, camera_matrix: np.ndarray, dist_coeffs: np.ndarray, flags: int = SOLVEPNP_IPPE_SQUARE) -> tuple[bool, np.ndarray, np.ndarray]:  # noqa: N802
     _ = object_points, dist_coeffs, flags
     mean_x = float(np.mean(image_points[:, 0]))
     mean_y = float(np.mean(image_points[:, 1]))
@@ -237,7 +238,7 @@ def solvePnP(object_points: np.ndarray, image_points: np.ndarray, camera_matrix:
     return True, rvec, tvec
 
 
-def projectPoints(object_points: np.ndarray, rvec: np.ndarray, tvec: np.ndarray, camera_matrix: np.ndarray, dist_coeffs: np.ndarray) -> tuple[np.ndarray, None]:  # noqa: ARG001
+def projectPoints(object_points: np.ndarray, rvec: np.ndarray, tvec: np.ndarray, camera_matrix: np.ndarray, dist_coeffs: np.ndarray) -> tuple[np.ndarray, None]:  # noqa: N802
     rot, _ = Rodrigues(rvec)
     pts = object_points.reshape(-1, 3).astype(np.float64)
     cam = (rot @ pts.T).T + np.asarray(tvec, dtype=np.float64).reshape(1, 3)
@@ -249,7 +250,7 @@ def projectPoints(object_points: np.ndarray, rvec: np.ndarray, tvec: np.ndarray,
 
 
 class QRCodeDetector:
-    def detectAndDecodeMulti(self, image: np.ndarray) -> tuple[bool, list[str], None, None]:  # noqa: ARG002
+    def detectAndDecodeMulti(self, image: np.ndarray) -> tuple[bool, list[str], None, None]:  # noqa: N802
         return False, [], None, None
 
 
@@ -257,7 +258,7 @@ class _ArucoDetector:
     def __init__(self, *_: Any) -> None:
         pass
 
-    def detectMarkers(self, image: np.ndarray) -> tuple[list[np.ndarray], None, list[np.ndarray]]:  # noqa: ARG002
+    def detectMarkers(self, image: np.ndarray) -> tuple[list[np.ndarray], None, list[np.ndarray]]:  # noqa: N802
         return [], None, []
 
 
@@ -265,7 +266,7 @@ class _ArucoModule:
     DICT_4X4_50 = 0
 
     @staticmethod
-    def getPredefinedDictionary(dictionary_id: int) -> int:
+    def getPredefinedDictionary(dictionary_id: int) -> int:  # noqa: N802
         return dictionary_id
 
     @staticmethod
