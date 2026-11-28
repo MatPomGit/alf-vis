@@ -86,22 +86,16 @@ class TestRenderDepth:
 
 
 class TestRenderRgbdSideBySide:
-    def test_output_width_is_sum(
-        self, bgr_image: np.ndarray, depth_map: np.ndarray
-    ) -> None:
+    def test_output_width_is_sum(self, bgr_image: np.ndarray, depth_map: np.ndarray) -> None:
         result = render_rgbd_side_by_side(bgr_image, depth_map)
         # Width should be larger than either input alone.
         assert result.shape[1] > bgr_image.shape[1]
 
-    def test_output_height_matches_rgb(
-        self, bgr_image: np.ndarray, depth_map: np.ndarray
-    ) -> None:
+    def test_output_height_matches_rgb(self, bgr_image: np.ndarray, depth_map: np.ndarray) -> None:
         result = render_rgbd_side_by_side(bgr_image, depth_map)
         assert result.shape[0] == bgr_image.shape[0]
 
-    def test_output_is_bgr_uint8(
-        self, bgr_image: np.ndarray, depth_map: np.ndarray
-    ) -> None:
+    def test_output_is_bgr_uint8(self, bgr_image: np.ndarray, depth_map: np.ndarray) -> None:
         result = render_rgbd_side_by_side(bgr_image, depth_map)
         assert result.dtype == np.uint8
         assert result.shape[2] == 3

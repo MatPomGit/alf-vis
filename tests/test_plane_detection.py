@@ -38,15 +38,11 @@ def two_plane_points() -> np.ndarray:
 
 class TestPlane3D:
     def test_horizontal_plane(self) -> None:
-        plane = Plane3D(
-            normal=np.array([0.0, 0.0, 1.0], dtype=np.float64), d=0.0
-        )
+        plane = Plane3D(normal=np.array([0.0, 0.0, 1.0], dtype=np.float64), d=0.0)
         assert plane.is_horizontal
 
     def test_vertical_plane(self) -> None:
-        plane = Plane3D(
-            normal=np.array([1.0, 0.0, 0.0], dtype=np.float64), d=0.0
-        )
+        plane = Plane3D(normal=np.array([1.0, 0.0, 0.0], dtype=np.float64), d=0.0)
         assert plane.is_vertical
 
     def test_default_inlier_indices_is_empty(self) -> None:
@@ -88,9 +84,7 @@ class TestFitPlaneRansac:
 
 class TestDetectMultiplePlanes:
     def test_detects_two_planes(self, two_plane_points: np.ndarray) -> None:
-        planes = detect_multiple_planes(
-            two_plane_points, max_planes=2, num_iterations=500
-        )
+        planes = detect_multiple_planes(two_plane_points, max_planes=2, num_iterations=500)
         assert len(planes) == 2
 
     def test_max_planes_respected(self, two_plane_points: np.ndarray) -> None:

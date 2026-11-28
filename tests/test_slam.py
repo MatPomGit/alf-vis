@@ -87,7 +87,6 @@ class TestSlamSession:
         with SlamSession(SlamConfig(backend="rtabmap")) as slam:
             assert slam is not None
 
-
     def test_pose_translation_increases_with_frames(self) -> None:
         session = SlamSession(SlamConfig(backend="open3d"))
         session.start()
