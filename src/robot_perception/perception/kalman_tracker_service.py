@@ -8,7 +8,7 @@ class SimpleKalmanTrackerService:
     def __init__(self) -> None:
         self._next_object_id = 1
         self._states: dict[int, np.ndarray] = {}
-        self._covariances: Dict[int, np.ndarray] = {}
+        self._covariances: dict[int, np.ndarray] = {}
         self.F = np.array([[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=float)
         self.H = np.array([[1, 0, 0, 0], [0, 1, 0, 0]], dtype=float)
         self.Q = np.eye(4) * 1.0
@@ -38,7 +38,7 @@ class SimpleKalmanTrackerService:
         self._states[object_id] = self.F @ x
         self._covariances[object_id] = self.F @ P @ self.F.T + self.Q
 
-    def _update(self, object_id: int, measurement_xy: Tuple[float, float]) -> None:
+    def _update(self, object_id: int, measurement_xy: tuple[float, float]) -> None:
         z = np.array([[measurement_xy[0]], [measurement_xy[1]]], dtype=float)
         x = self._states[object_id].reshape(4, 1)
         P = self._covariances[object_id]
@@ -52,10 +52,10 @@ class SimpleKalmanTrackerService:
 
     def update_tracks(
         self,
-        detections: List[DetectedObject],
-        previous_tracks: List[TrackedObject],
+        detections: list[DetectedObject],
+        previous_tracks: list[TrackedObject],
         match_distance_px: float = 60.0,
-    ) -> List[TrackedObject]:
+    ) -> list[TrackedObject]:
         for tr in previous_tracks:
             if tr.object_id in self._states:
                 self._predict(tr.object_id)

@@ -28,14 +28,14 @@ class RobotPerceptionStateMachine:
         config: AppConfig,
         ros_node: PerceptionRosNode,
         selected_source: str = "rgbd",
-        camera_service: Optional[CameraService] = None,
+        camera_service: CameraService | None = None,
     ) -> None:
         self.config = config
         self.ros_node = ros_node
         self.selected_source = selected_source
         self.state = PerceptionState.IDLE
         self.snapshot = PerceptionSnapshot(camera_id=config.camera_id)
-        self.last_module_inputs: Dict[str, Dict[str, Any]] = {}
+        self.last_module_inputs: dict[str, Dict[str, Any]] = {}
         self.camera_service = camera_service or CameraService(
             config.camera_id, config.camera_width, config.camera_height, config.output_dir
         )
@@ -77,7 +77,7 @@ class RobotPerceptionStateMachine:
         )
         self.current_frame = None
         self.current_depth = None
-        self.current_detections: List[DetectedObject] = []
+        self.current_detections: list[DetectedObject] = []
         self.snapshot.calibration = self.calibration_service.calibration
 
     def _record_time(self, name: str, value_ms: float) -> None:
@@ -86,7 +86,7 @@ class RobotPerceptionStateMachine:
     def _remember_inputs(self, module_name: str, **kwargs: Any) -> None:
         self.last_module_inputs[module_name] = kwargs
 
-    def get_debug_view(self) -> Dict[str, Any]:
+    def get_debug_view(self) -> dict[str, Any]:
         return {
             "current_state": self.state.name,
             "frame_id": self.snapshot.frame_id,

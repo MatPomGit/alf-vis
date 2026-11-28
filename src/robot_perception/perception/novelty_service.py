@@ -6,10 +6,10 @@ from common.models import DetectedObject, TrackedObject
 class NoveltyService:
     def detect_new_objects(
         self,
-        detections: List[DetectedObject],
-        tracked_objects: List[TrackedObject],
+        detections: list[DetectedObject],
+        tracked_objects: list[TrackedObject],
         distance_threshold_px: float = 40.0,
-    ) -> List[DetectedObject]:
+    ) -> list[DetectedObject]:
         new_objects = []
         for det in detections:
             matched = False

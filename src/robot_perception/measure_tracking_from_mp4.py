@@ -5,7 +5,7 @@ import csv
 import math
 import time
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 from common.utils import ensure_dir, load_config
 from perception.state_machine import RobotPerceptionStateMachine
@@ -37,8 +37,8 @@ def parse_args() -> argparse.Namespace:
 
 
 def _track_motion_metrics(
-    prev_centroids: dict[int, Tuple[float, float]],
-    current_centroids: Dict[int, Tuple[float, float]],
+    prev_centroids: dict[int, tuple[float, float]],
+    current_centroids: dict[int, Tuple[float, float]],
 ) -> dict[str, float]:
     shared_ids = set(prev_centroids).intersection(current_centroids)
     displacements: list[float] = []
@@ -74,9 +74,9 @@ def main() -> None:
     )
     machine.print_snapshot = lambda: None  # type: ignore[assignment]
 
-    rows: list[Dict[str, float | int | str | bool]] = []
+    rows: list[dict[str, float | int | str | bool]] = []
     processed_frames = 0
-    prev_track_centroids: dict[int, Tuple[float, float]] = {}
+    prev_track_centroids: dict[int, tuple[float, float]] = {}
 
     try:
         while True:

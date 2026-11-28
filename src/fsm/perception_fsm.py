@@ -38,7 +38,7 @@ class TrackedObject:
     object_id: int
     label: str
     bbox: tuple[int, int, int, int]
-    position: Tuple[float, float]
+    position: tuple[float, float]
     velocity: tuple[float, float] = (0.0, 0.0)
     confidence: float = 1.0
 
@@ -48,16 +48,16 @@ class PerceptionContext:
     frame_id: int = 0
     timestamp: float = 0.0
     image: Any | None = None
-    roi: Optional[Tuple[int, int, int, int]] = None
+    roi: Tuple[int, int, int, int] | None = None
 
-    visual_markers: list[Dict[str, Any]] = field(default_factory=list)
+    visual_markers: list[dict[str, Any]] = field(default_factory=list)
     human_detected: bool = False
     obstacle_detected: bool = False
-    new_objects: list[Dict[str, Any]] = field(default_factory=list)
-    tracked_objects: List[TrackedObject] = field(default_factory=list)
+    new_objects: list[dict[str, Any]] = field(default_factory=list)
+    tracked_objects: list[TrackedObject] = field(default_factory=list)
 
     path_deviation_detected: bool = False
-    slam_pose: Dict[str, float] | None = None
+    slam_pose: dict[str, float] | None = None
     slam_map_status: str = "UNKNOWN"
 
     system_ok: bool = True
@@ -83,7 +83,7 @@ class ActiveVisionModule:
 
 
 class VisualMarkerDetector:
-    def detect(self, image: Any, roi: Tuple[int, int, int, int] | None) -> List[Dict[str, Any]]:
+    def detect(self, image: Any, roi: tuple[int, int, int, int] | None) -> List[Dict[str, Any]]:
         # TODO: detekcja markerów ArUco / AprilTag / QR
         return [{"id": 1, "type": "aruco", "pose": {"x": 1.2, "y": 0.4, "z": 0.0}}]
 
@@ -101,13 +101,13 @@ class ObstacleDetector:
 
 
 class NewObjectDetector:
-    def detect(self, image: Any, tracked_objects: list[TrackedObject]) -> List[Dict[str, Any]]:
+    def detect(self, image: Any, tracked_objects: list[TrackedObject]) -> list[Dict[str, Any]]:
         # TODO: detekcja nowych obiektów
         return [{"label": "box", "bbox": (220, 180, 80, 60), "confidence": 0.92}]
 
 
 class KalmanTracker:
-    def update(self, tracked_objects: list[TrackedObject], image: Any) -> List[TrackedObject]:
+    def update(self, tracked_objects: list[TrackedObject], image: Any) -> list[TrackedObject]:
         # TODO: rzeczywisty update filtru Kalmana dla śledzonych obiektów
         updated = []
         for obj in tracked_objects:
@@ -127,7 +127,7 @@ class KalmanTracker:
 
 
 class PathDeviationChecker:
-    def check(self, slam_pose: Dict[str, float] | None) -> bool:
+    def check(self, slam_pose: dict[str, float] | None) -> bool:
         # TODO: porównanie pozycji robota z trajektorią referencyjną
         if slam_pose is None:
             return False
@@ -136,8 +136,8 @@ class PathDeviationChecker:
 
 class SlamModule:
     def update(
-        self, image: Any, visual_markers: List[Dict[str, Any]]
-    ) -> Tuple[Dict[str, float], str]:
+        self, image: Any, visual_markers: list[Dict[str, Any]]
+    ) -> tuple[Dict[str, float], str]:
         # TODO: aktualizacja SLAM
         pose = {"x": 2.4, "y": 0.1, "theta": 0.03}
         status = "UPDATED"

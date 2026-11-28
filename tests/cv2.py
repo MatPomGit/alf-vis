@@ -173,7 +173,7 @@ def arrowedLine(
     color: tuple[int, int, int],
     thickness: int,
     tipLength: float = 0.1,
-) -> np.ndarray:  # noqa: N803, N802
+) -> np.ndarray:
     x1, y1 = pt1
     x2, y2 = pt2
     n = max(abs(x2 - x1), abs(y2 - y1), 1)
@@ -229,7 +229,7 @@ def calibrateCamera(
     img_points: list[np.ndarray],
     image_size: tuple[int, int],
     *_: Any,
-) -> tuple[float, np.ndarray, np.ndarray, list[np.ndarray], list[np.ndarray]]:  # noqa: N802
+) -> tuple[float, np.ndarray, np.ndarray, list[np.ndarray], list[np.ndarray]]:
     k = np.array(
         [[500.0, 0.0, image_size[0] / 2], [0.0, 500.0, image_size[1] / 2], [0.0, 0.0, 1.0]],
         dtype=np.float64,
@@ -262,7 +262,7 @@ def solvePnP(
     camera_matrix: np.ndarray,
     dist_coeffs: np.ndarray,
     flags: int = SOLVEPNP_IPPE_SQUARE,
-) -> tuple[bool, np.ndarray, np.ndarray]:  # noqa: N802
+) -> tuple[bool, np.ndarray, np.ndarray]:
     _ = object_points, dist_coeffs, flags
     mean_x = float(np.mean(image_points[:, 0]))
     mean_y = float(np.mean(image_points[:, 1]))
@@ -280,7 +280,7 @@ def projectPoints(
     tvec: np.ndarray,
     camera_matrix: np.ndarray,
     dist_coeffs: np.ndarray,
-) -> tuple[np.ndarray, None]:  # noqa: N802
+) -> tuple[np.ndarray, None]:
     rot, _ = Rodrigues(rvec)
     pts = object_points.reshape(-1, 3).astype(np.float64)
     cam = (rot @ pts.T).T + np.asarray(tvec, dtype=np.float64).reshape(1, 3)

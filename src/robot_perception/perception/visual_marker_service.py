@@ -1,9 +1,12 @@
 from __future__ import annotations
+
 from typing import List, Optional
+
 import cv2
 import numpy as np
+from common.models import ROI, CameraCalibration, Pose3D, VisualMarker
 from pupil_apriltags import Detector
-from common.models import CameraCalibration, Pose3D, ROI, VisualMarker
+
 from perception.console import info, warn
 
 
@@ -66,11 +69,11 @@ class VisualMarkerService:
     def _estimate_pose_from_square(
         self, image_points: np.ndarray, calibration: CameraCalibration, marker_size_m: float
     ) -> tuple[
-        Optional[Pose3D],
+        Pose3D | None,
         Optional[list[float]],
-        Optional[list[float]],
-        Optional[float],
-        Optional[str],
+        list[float] | None,
+        float | None,
+        str | None,
     ]:
         half = marker_size_m / 2.0
         object_points = np.array(
@@ -188,7 +191,7 @@ class VisualMarkerService:
 
     def _detect_cctag(
         self, frame_bgr: np.ndarray, calibration: CameraCalibration, roi: ROI | None
-    ) -> List[VisualMarker]:
+    ) -> list[VisualMarker]:
         if not self.cctag_enabled:
             return []
         warn("Integracja CCTag nie jest jeszcze gotowa. Pomijam ten typ znacznika.")
@@ -197,7 +200,7 @@ class VisualMarkerService:
 
     def detect(
         self, frame_bgr: np.ndarray, calibration: CameraCalibration, roi: ROI | None = None
-    ) -> List[VisualMarker]:
+    ) -> list[VisualMarker]:
         info("Rozpoczynam wielomodalną detekcję markerów wizyjnych...")
         markers = []
         markers.extend(self._detect_apriltag(frame_bgr, calibration, roi))

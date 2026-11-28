@@ -1,15 +1,17 @@
 from __future__ import annotations
+
 from typing import List
+
 import numpy as np
-from ultralytics import YOLO
 from common.models import DetectedObject
+from ultralytics import YOLO
 
 
 class YoloService:
     def __init__(self, model_path: str = "yolov8s.pt") -> None:
         self.model = YOLO(model_path)
 
-    def detect(self, frame_bgr: np.ndarray) -> List[DetectedObject]:
+    def detect(self, frame_bgr: np.ndarray) -> list[DetectedObject]:
         results = self.model.predict(frame_bgr, verbose=False)
         detections = []
         if not results:
@@ -39,10 +41,10 @@ class YoloService:
             )
         return detections
 
-    def detect_humans(self, frame_bgr: np.ndarray) -> List[DetectedObject]:
+    def detect_humans(self, frame_bgr: np.ndarray) -> list[DetectedObject]:
         return [d for d in self.detect(frame_bgr) if d.label == "person"]
 
-    def detect_obstacles(self, frame_bgr: np.ndarray) -> List[DetectedObject]:
+    def detect_obstacles(self, frame_bgr: np.ndarray) -> list[DetectedObject]:
         obstacle_labels = {
             "chair",
             "bench",

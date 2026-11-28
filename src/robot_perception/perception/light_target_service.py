@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from typing import Optional
 from collections.abc import Sequence
+from typing import Optional
 
 import cv2
 import numpy as np
@@ -33,7 +33,7 @@ class LightTargetService:
     @staticmethod
     def _normalize_hsv_bounds(
         hsv_lower: Sequence[int] | None, hsv_upper: Sequence[int] | None
-    ) -> tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+    ) -> tuple[np.ndarray | None, Optional[np.ndarray]]:
         if hsv_lower is None or hsv_upper is None:
             return None, None
         if len(hsv_lower) != 3 or len(hsv_upper) != 3:

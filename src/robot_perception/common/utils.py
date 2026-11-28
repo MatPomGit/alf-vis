@@ -1,14 +1,15 @@
 from __future__ import annotations
 import time
 from pathlib import Path
-from typing import Callable, Tuple, TypeVar
+from typing import Tuple, TypeVar
+from collections.abc import Callable
 import yaml
 from common.models import AppConfig, CameraCalibration
 
 T = TypeVar("T")
 
 
-def timed_call(fn: Callable[..., T], *args, **kwargs) -> Tuple[T, float]:
+def timed_call(fn: Callable[..., T], *args, **kwargs) -> tuple[T, float]:
     start = time.perf_counter()
     result = fn(*args, **kwargs)
     elapsed_ms = (time.perf_counter() - start) * 1000.0
@@ -22,12 +23,12 @@ def ensure_dir(path: str | Path) -> Path:
 
 
 def load_config(path: str | Path) -> AppConfig:
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         data = yaml.safe_load(f)
     return AppConfig.model_validate(data)
 
 
 def load_camera_calibration(path: str | Path) -> CameraCalibration:
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         data = yaml.safe_load(f)
     return CameraCalibration.model_validate(data)

@@ -9,7 +9,7 @@ import time
 from dataclasses import asdict, dataclass, field
 from enum import Enum, auto
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 BASE_DIR = Path(__file__).resolve().parent
 MODULES_DIR = BASE_DIR / "modules"
@@ -39,7 +39,7 @@ class TrackedObject:
     object_id: int
     label: str
     bbox: tuple[int, int, int, int]
-    position: Tuple[float, float]
+    position: tuple[float, float]
     velocity: tuple[float, float] = (0.0, 0.0)
     confidence: float = 1.0
 
@@ -51,19 +51,19 @@ class PerceptionContext:
 
     camera_id: int = 0
     image_path: str | None = None
-    image_meta: Dict[str, Any] = field(default_factory=dict)
+    image_meta: dict[str, Any] = field(default_factory=dict)
 
     slam_initialized: bool = False
     slam_init_status: str = "NOT_INITIALIZED"
-    slam_pose: Dict[str, float] | None = None
+    slam_pose: dict[str, float] | None = None
     slam_map_status: str = "UNKNOWN"
 
-    roi: Tuple[int, int, int, int] | None = None
-    visual_markers: List[Dict[str, Any]] = field(default_factory=list)
+    roi: tuple[int, int, int, int] | None = None
+    visual_markers: list[Dict[str, Any]] = field(default_factory=list)
     human_detected: bool = False
     obstacle_detected: bool = False
-    new_objects: list[Dict[str, Any]] = field(default_factory=list)
-    tracked_objects: List[TrackedObject] = field(default_factory=list)
+    new_objects: list[dict[str, Any]] = field(default_factory=list)
+    tracked_objects: list[TrackedObject] = field(default_factory=list)
 
     path_deviation_detected: bool = False
     path_deviation_value: float = 0.0
@@ -111,7 +111,7 @@ class ExternalModuleRunner:
     def __init__(self, python_executable: str = sys.executable) -> None:
         self.python_executable = python_executable
 
-    def run(self, script_name: str, payload: dict[str, Any]) -> Dict[str, Any]:
+    def run(self, script_name: str, payload: dict[str, Any]) -> dict[str, Any]:
         script_path = MODULES_DIR / script_name
         if not script_path.exists():
             raise ExternalModuleError(f"Brak skryptu modułu: {script_path}")
