@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import importlib
 import os
 import sys
 from types import ModuleType
@@ -35,11 +36,9 @@ def get_array_backend(prefer_gpu: bool = False) -> ModuleType:
         return np
 
     try:
-        import cupy as cp
+        return importlib.import_module("cupy")
     except ImportError:
         return np
-
-    return cp
 
 
 def to_numpy(array: object) -> np.ndarray:

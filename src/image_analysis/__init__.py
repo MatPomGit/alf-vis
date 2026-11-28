@@ -20,7 +20,7 @@ def __getattr__(name: str) -> object:
     if name in {"KalmanMultiObjectTracker", "TrackedObject"}:
         from image_analysis.kalman_tracking import KalmanMultiObjectTracker, TrackedObject
 
-        exports = {
+        exports: dict[str, object] = {
             "KalmanMultiObjectTracker": KalmanMultiObjectTracker,
             "TrackedObject": TrackedObject,
         }

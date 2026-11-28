@@ -72,10 +72,13 @@ class TestCreateTrajectoryLineSet:
         assert len(pts) == 0
         assert len(lines) == 0
 
-    def test_single_pose_returns_empty(self) -> None:
-        pts, lines = create_trajectory_line_set([np.eye(4)])
-        assert len(pts) == 1
-        assert len(lines) == 0
+    def test_single_pose_retains_position_without_lines(self) -> None:
+        pose = np.eye(4)
+        pose[:3, 3] = [1.0, 2.0, 3.0]
+        pts, lines = create_trajectory_line_set([pose])
+        assert pts.shape == (1, 3)
+        np.testing.assert_array_equal(pts, [[1.0, 2.0, 3.0]])
+        assert lines.shape == (0, 2)
 
     def test_two_poses_give_one_line(self) -> None:
         t0 = np.eye(4, dtype=np.float64)
