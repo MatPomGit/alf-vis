@@ -7,8 +7,14 @@ class NoveltyService:
         for det in detections:
             matched=False
             for tr in tracked_objects:
-                if det.label != tr.label: continue
-                dx = det.centroid_xy[0]-tr.centroid_xy[0]; dy = det.centroid_xy[1]-tr.centroid_xy[1]
-                if (dx*dx+dy*dy)**0.5 < distance_threshold_px: matched=True; break
-            if not matched: det.is_new = True; new_objects.append(det)
+                if det.label != tr.label:
+                    continue
+                dx = det.centroid_xy[0]-tr.centroid_xy[0]
+                dy = det.centroid_xy[1]-tr.centroid_xy[1]
+                if (dx*dx+dy*dy)**0.5 < distance_threshold_px:
+                    matched=True
+                    break
+            if not matched:
+                det.is_new = True
+                new_objects.append(det)
         return new_objects
