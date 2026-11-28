@@ -1,0 +1,2 @@
+# Optional development integration; not a published release.
+lib-ros @ git+https://github.com/MatPomGit/lib-ros.git@d4813d48ef60a9649df122d6df3cc056312608b5
