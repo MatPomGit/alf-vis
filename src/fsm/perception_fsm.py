@@ -13,6 +13,7 @@ from typing import Any, Dict, List, Optional, Tuple
 # ENUM STANÓW
 # ============================================================
 
+
 class PerceptionState(Enum):
     IDLE = auto()
     ACTIVE_VISION = auto()
@@ -31,6 +32,7 @@ class PerceptionState(Enum):
 # ============================================================
 # STRUKTURY DANYCH
 # ============================================================
+
 
 @dataclass
 class TrackedObject:
@@ -73,6 +75,7 @@ class PerceptionContext:
 # OpenCV, YOLO, AprilTag/Aruco, Kalman, SLAM, itd.
 # ============================================================
 
+
 class ActiveVisionModule:
     def find_relevant_roi(self, image: Any) -> Tuple[int, int, int, int]:
         # TODO: rzeczywista implementacja active vision
@@ -83,9 +86,7 @@ class ActiveVisionModule:
 class VisualMarkerDetector:
     def detect(self, image: Any, roi: Optional[Tuple[int, int, int, int]]) -> List[Dict[str, Any]]:
         # TODO: detekcja markerów ArUco / AprilTag / QR
-        return [
-            {"id": 1, "type": "aruco", "pose": {"x": 1.2, "y": 0.4, "z": 0.0}}
-        ]
+        return [{"id": 1, "type": "aruco", "pose": {"x": 1.2, "y": 0.4, "z": 0.0}}]
 
 
 class HumanDetector:
@@ -103,9 +104,7 @@ class ObstacleDetector:
 class NewObjectDetector:
     def detect(self, image: Any, tracked_objects: List[TrackedObject]) -> List[Dict[str, Any]]:
         # TODO: detekcja nowych obiektów
-        return [
-            {"label": "box", "bbox": (220, 180, 80, 60), "confidence": 0.92}
-        ]
+        return [{"label": "box", "bbox": (220, 180, 80, 60), "confidence": 0.92}]
 
 
 class KalmanTracker:
@@ -137,7 +136,9 @@ class PathDeviationChecker:
 
 
 class SlamModule:
-    def update(self, image: Any, visual_markers: List[Dict[str, Any]]) -> Tuple[Dict[str, float], str]:
+    def update(
+        self, image: Any, visual_markers: List[Dict[str, Any]]
+    ) -> Tuple[Dict[str, float], str]:
         # TODO: aktualizacja SLAM
         pose = {"x": 2.4, "y": 0.1, "theta": 0.03}
         status = "UPDATED"
@@ -148,6 +149,7 @@ class SlamModule:
 # PUBLIKATOR ROS2 W OSOBNYM WĄTKU
 # To jest bezpieczny szkielet. W miejscu TODO podpinasz rclpy.
 # ============================================================
+
 
 class ROS2PublisherThread(threading.Thread):
     def __init__(self) -> None:
@@ -175,7 +177,9 @@ class ROS2PublisherThread(threading.Thread):
                 pass
             else:
                 # tryb symulacyjny
-                print("[ROS2 THREAD] Symulowana publikacja:", json.dumps(payload, ensure_ascii=False))
+                print(
+                    "[ROS2 THREAD] Symulowana publikacja:", json.dumps(payload, ensure_ascii=False)
+                )
 
     def stop(self) -> None:
         self._stop_event.set()
@@ -184,6 +188,7 @@ class ROS2PublisherThread(threading.Thread):
 # ============================================================
 # GŁÓWNA MASZYNA STANÓW
 # ============================================================
+
 
 class RobotPerceptionStateMachine:
     def __init__(self) -> None:
@@ -227,8 +232,7 @@ class RobotPerceptionStateMachine:
 
             elif self.state == PerceptionState.DETECT_VISUAL_MARKERS:
                 self.context.visual_markers = self.marker_detector.detect(
-                    self.context.image,
-                    self.context.roi
+                    self.context.image, self.context.roi
                 )
                 self.transition_to(PerceptionState.DETECT_HUMAN)
 
@@ -242,8 +246,7 @@ class RobotPerceptionStateMachine:
 
             elif self.state == PerceptionState.DETECT_NEW_OBJECTS:
                 detected_new = self.new_object_detector.detect(
-                    self.context.image,
-                    self.context.tracked_objects
+                    self.context.image, self.context.tracked_objects
                 )
                 self.context.new_objects = detected_new
 
@@ -263,13 +266,14 @@ class RobotPerceptionStateMachine:
 
             elif self.state == PerceptionState.TRACK_OBJECTS_KALMAN:
                 self.context.tracked_objects = self.kalman_tracker.update(
-                    self.context.tracked_objects,
-                    self.context.image
+                    self.context.tracked_objects, self.context.image
                 )
                 self.transition_to(PerceptionState.CHECK_PATH_DEVIATION)
 
             elif self.state == PerceptionState.CHECK_PATH_DEVIATION:
-                self.context.path_deviation_detected = self.path_checker.check(self.context.slam_pose)
+                self.context.path_deviation_detected = self.path_checker.check(
+                    self.context.slam_pose
+                )
                 self.transition_to(PerceptionState.UPDATE_SLAM)
 
             elif self.state == PerceptionState.UPDATE_SLAM:
@@ -341,6 +345,7 @@ class RobotPerceptionStateMachine:
 # ============================================================
 # PRZYKŁAD UŻYCIA
 # ============================================================
+
 
 def main() -> None:
     sm = RobotPerceptionStateMachine()
