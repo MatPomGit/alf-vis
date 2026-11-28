@@ -3,8 +3,8 @@
 # https://docs.ros.org/en/iron/p/rclpy/rclpy.task.html
 
 import rclpy
-from rclpy.node import Node
 from geometry_msgs.msg import PointStamped
+from rclpy.node import Node
 
 
 class PointLocationSender(Node):

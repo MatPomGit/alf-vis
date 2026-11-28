@@ -1,8 +1,10 @@
 from __future__ import annotations
+
+from common.models import AppConfig, PerceptionSnapshot
 from rclpy.node import Node
 from sensor_msgs.msg import PointCloud2
 from std_msgs.msg import String
-from common.models import AppConfig, PerceptionSnapshot
+
 from perception.publishers import PublisherFactory
 
 

@@ -1,11 +1,13 @@
 from __future__ import annotations
-from rclpy.node import Node
+
 from common.models import SlamStatus
+from rclpy.node import Node
+
 from slam.console import info, warn
 from slam.tf_service import TfService
 
 try:
-    from rtabmap_msgs.msg import OdomInfo, Info, MapData
+    from rtabmap_msgs.msg import Info, MapData, OdomInfo
 except Exception:
     OdomInfo = None
     Info = None

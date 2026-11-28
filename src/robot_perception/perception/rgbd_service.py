@@ -47,7 +47,7 @@ class RGBDService:
         self._depth_cov = updated_cov
         return np.clip(updated_state, 0, np.iinfo(np.uint16).max).astype(np.uint16)
 
-    def capture_depth(self, frame_id: int) -> Tuple[np.ndarray, str, DepthMeta]:
+    def capture_depth(self, frame_id: int) -> tuple[np.ndarray, str, DepthMeta]:
         if not self.available:
             raise RuntimeError("Źródło depth nie jest dostępne.")
         ok, depth_frame = self.cap.read()

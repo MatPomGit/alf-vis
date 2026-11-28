@@ -1,7 +1,7 @@
+from common.models import PerceptionSnapshot, PointCloudData
 from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs_py import point_cloud2
 from std_msgs.msg import Header, String
-from common.models import PerceptionSnapshot, PointCloudData
 
 
 class PublisherFactory:

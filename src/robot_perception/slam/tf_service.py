@@ -1,11 +1,14 @@
 from __future__ import annotations
+
 from typing import Optional
+
+import tf2_ros
+from common.models import Pose3D
 from rclpy.duration import Duration
 from rclpy.node import Node
 from rclpy.time import Time
-import tf2_ros
 from transforms3d.euler import quat2euler
-from common.models import Pose3D
+
 from slam.console import info, warn
 
 
@@ -18,7 +21,7 @@ class TfService:
 
     def lookup_pose(
         self, target_frame: str, source_frame: str, timeout_sec: float = 0.2
-    ) -> Optional[Pose3D]:
+    ) -> Pose3D | None:
         try:
             transform = self.buffer.lookup_transform(
                 target_frame, source_frame, Time(), timeout=Duration(seconds=timeout_sec)

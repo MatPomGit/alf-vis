@@ -72,7 +72,7 @@ class PointCloudService:
 
     def validate_transform(
         self,
-        camera_pose_in_map: Optional[Pose3D],
+        camera_pose_in_map: Pose3D | None,
         translation_limit_m: float,
         rotation_limit_rad: float,
     ) -> bool:
@@ -90,7 +90,7 @@ class PointCloudService:
         return translation_norm <= translation_limit_m and rotation_max <= rotation_limit_rad
 
     def transform_to_map(
-        self, cloud: PointCloudData, camera_pose_in_map: Optional[Pose3D]
+        self, cloud: PointCloudData, camera_pose_in_map: Pose3D | None
     ) -> PointCloudData:
         if camera_pose_in_map is None or not cloud.points:
             warn("Pomijam transformację chmury.")

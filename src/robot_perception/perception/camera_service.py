@@ -17,7 +17,7 @@ class CameraService:
         if not self.cap.isOpened():
             raise RuntimeError(f"Nie udało się otworzyć kamery RGB o ID={camera_id}.")
 
-    def capture(self, frame_id: int) -> Tuple[np.ndarray, str, ImageMeta]:
+    def capture(self, frame_id: int) -> tuple[np.ndarray, str, ImageMeta]:
         ok, frame = self.cap.read()
         if not ok or frame is None:
             raise RuntimeError("Nie udało się pobrać obrazu RGB z kamery.")
