@@ -50,7 +50,7 @@ def classify_image(
         raise ValueError(f"confidence_threshold must be in [0.0, 1.0], got {confidence_threshold}")
 
     image_f32 = image.astype(np.float32)
-    if image_f32.max(axis=None) > 1.0:
+    if image_f32.ravel().max(axis=0) > 1.0:
         image_f32 /= 255.0
 
     mean_intensity = float(np.mean(image_f32))

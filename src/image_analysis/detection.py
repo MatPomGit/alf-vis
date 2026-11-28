@@ -73,10 +73,10 @@ def detect_objects(
 
     raw_detections: list[Detection] = []
     if ys.size > 0 and xs.size > 0:
-        x1 = int(xs.min(axis=None))
-        x2 = int(xs.max(axis=None)) + 1
-        y1 = int(ys.min(axis=None))
-        y2 = int(ys.max(axis=None)) + 1
+        x1 = int(xs.min(axis=0))
+        x2 = int(xs.max(axis=0)) + 1
+        y1 = int(ys.min(axis=0))
+        y2 = int(ys.max(axis=0)) + 1
         area = float((x2 - x1) * (y2 - y1))
         if area >= min_area:
             confidence = min(1.0, float(mask.mean()) * 2.0)
