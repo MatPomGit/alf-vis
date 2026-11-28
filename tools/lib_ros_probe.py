@@ -10,10 +10,14 @@ from lib_ros import MockBackend, RosClient
 def pose(ros: RosClient, target: str, source: str, timeout: float) -> dict[str, object]:
     """Return original ROS translation in metres and quaternion in xyzw order."""
     transform = ros.transform(target, source, timeout=timeout)
-    t = transform.transform.translation
-    q = transform.transform.rotation
-    return {"target": target, "source": source, "translation_m": [t.x, t.y, t.z],
-            "quaternion_xyzw": [q.x, q.y, q.z, q.w]}
+    translation = transform.transform.translation
+    rotation = transform.transform.rotation
+    return {
+        "target": target,
+        "source": source,
+        "translation_m": [translation.x, translation.y, translation.z],
+        "quaternion_xyzw": [rotation.x, rotation.y, rotation.z, rotation.w],
+    }
 
 
 def self_test() -> None:

@@ -26,4 +26,6 @@ jobs:
     - name: Analysing the code with pylint
       run: |
         # OpenCV exposes members through a native extension rather than Python source.
-        git ls-files -z '*.py' | xargs -0 python -m pylint --extension-pkg-allow-list=cv2
+        # Optional lib-ros probe has a separate lint job with its dependency installed.
+        # The core application still supports Python 3.10; lib-ros requires >=3.11.
+        git ls-files -z '*.py' ':!tools/lib_ros_probe.py' | xargs -0 python -m pylint --extension-pkg-allow-list=cv2
