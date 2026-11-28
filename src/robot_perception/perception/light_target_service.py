@@ -1,11 +1,12 @@
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from typing import Optional
+from collections.abc import Sequence
 
 import cv2
 import numpy as np
+from common.models import ROI, LightTarget
 
-from common.models import LightTarget, ROI
 from perception.console import info
 
 
@@ -55,7 +56,7 @@ class LightTargetService:
         )
         return lower, upper
 
-    def detect(self, frame_bgr: np.ndarray, roi: ROI | None = None) -> Optional[LightTarget]:
+    def detect(self, frame_bgr: np.ndarray, roi: ROI | None = None) -> LightTarget | None:
         if frame_bgr is None or frame_bgr.size == 0:
             return None
         if roi is None:
@@ -89,5 +90,5 @@ class LightTargetService:
             axes_xy=(float(axis_w), float(axis_h)),
             angle_deg=float(angle),
             area_px=float(cv2.contourArea(best)),
-            contour_points=int(len(best)),
+            contour_points=len(best),
         )

@@ -7,7 +7,7 @@ from common.models import DetectedObject, TrackedObject
 class SimpleKalmanTrackerService:
     def __init__(self) -> None:
         self._next_object_id = 1
-        self._states: Dict[int, np.ndarray] = {}
+        self._states: dict[int, np.ndarray] = {}
         self._covariances: Dict[int, np.ndarray] = {}
         self.F = np.array([[1, 0, 1, 0], [0, 1, 0, 1], [0, 0, 1, 0], [0, 0, 0, 1]], dtype=float)
         self.H = np.array([[1, 0, 0, 0], [0, 1, 0, 0]], dtype=float)

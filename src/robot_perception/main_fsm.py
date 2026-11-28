@@ -6,11 +6,10 @@ import subprocess
 import sys
 import threading
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from enum import Enum, auto
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
-
 
 BASE_DIR = Path(__file__).resolve().parent
 MODULES_DIR = BASE_DIR / "modules"
@@ -39,9 +38,9 @@ class PerceptionState(Enum):
 class TrackedObject:
     object_id: int
     label: str
-    bbox: Tuple[int, int, int, int]
+    bbox: tuple[int, int, int, int]
     position: Tuple[float, float]
-    velocity: Tuple[float, float] = (0.0, 0.0)
+    velocity: tuple[float, float] = (0.0, 0.0)
     confidence: float = 1.0
 
 
@@ -51,34 +50,34 @@ class PerceptionContext:
     timestamp: float = 0.0
 
     camera_id: int = 0
-    image_path: Optional[str] = None
+    image_path: str | None = None
     image_meta: Dict[str, Any] = field(default_factory=dict)
 
     slam_initialized: bool = False
     slam_init_status: str = "NOT_INITIALIZED"
-    slam_pose: Optional[Dict[str, float]] = None
+    slam_pose: Dict[str, float] | None = None
     slam_map_status: str = "UNKNOWN"
 
-    roi: Optional[Tuple[int, int, int, int]] = None
+    roi: Tuple[int, int, int, int] | None = None
     visual_markers: List[Dict[str, Any]] = field(default_factory=list)
     human_detected: bool = False
     obstacle_detected: bool = False
-    new_objects: List[Dict[str, Any]] = field(default_factory=list)
+    new_objects: list[Dict[str, Any]] = field(default_factory=list)
     tracked_objects: List[TrackedObject] = field(default_factory=list)
 
     path_deviation_detected: bool = False
     path_deviation_value: float = 0.0
 
-    point_cloud: Dict[str, Any] = field(default_factory=dict)
+    point_cloud: dict[str, Any] = field(default_factory=dict)
     save_point_cloud_enabled: bool = False
-    point_cloud_save_path: Optional[str] = None
+    point_cloud_save_path: str | None = None
 
-    processing_times_ms: Dict[str, float] = field(default_factory=dict)
+    processing_times_ms: dict[str, float] = field(default_factory=dict)
 
     system_ok: bool = True
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
-    def to_payload(self) -> Dict[str, Any]:
+    def to_payload(self) -> dict[str, Any]:
         return {
             "frame_id": self.frame_id,
             "timestamp": self.timestamp,
@@ -112,7 +111,7 @@ class ExternalModuleRunner:
     def __init__(self, python_executable: str = sys.executable) -> None:
         self.python_executable = python_executable
 
-    def run(self, script_name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
+    def run(self, script_name: str, payload: dict[str, Any]) -> Dict[str, Any]:
         script_path = MODULES_DIR / script_name
         if not script_path.exists():
             raise ExternalModuleError(f"Brak skryptu modułu: {script_path}")
@@ -155,10 +154,10 @@ class ROS2PublisherThread(threading.Thread):
     def __init__(self, runner: ExternalModuleRunner) -> None:
         super().__init__(daemon=True)
         self.runner = runner
-        self._queue: queue.Queue[Dict[str, Any]] = queue.Queue()
+        self._queue: queue.Queue[dict[str, Any]] = queue.Queue()
         self._stop_event = threading.Event()
 
-    def publish_async(self, state: Dict[str, Any]) -> None:
+    def publish_async(self, state: dict[str, Any]) -> None:
         self._queue.put(state)
 
     def run(self) -> None:
@@ -197,7 +196,7 @@ class RobotPerceptionStateMachine:
     def transition_to(self, next_state: PerceptionState) -> None:
         self.state = next_state
 
-    def _run_module(self, script_name: str) -> Dict[str, Any]:
+    def _run_module(self, script_name: str) -> dict[str, Any]:
         start = time.perf_counter()
         response = self.runner.run(script_name, self.context.to_payload())
         elapsed_ms = (time.perf_counter() - start) * 1000.0
@@ -265,7 +264,7 @@ class RobotPerceptionStateMachine:
 
             elif self.state == PerceptionState.TRACK_OBJECTS_KALMAN:
                 result = self._run_module("track_objects_kalman.py")
-                tracked_objects: List[TrackedObject] = []
+                tracked_objects: list[TrackedObject] = []
                 for obj in result.get("tracked_objects", []):
                     tracked_objects.append(
                         TrackedObject(
