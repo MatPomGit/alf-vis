@@ -1,3 +1,5 @@
+"""ROS 2 stamped point publisher."""
+
 # https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Creating-A-Workspace/Creating-A-Workspace.html#new-directory
 # https://docs.ros.org/en/humble/Tutorials/Beginner-Client-Libraries/Writing-A-Simple-Py-Publisher-And-Subscriber.html
 # https://docs.ros.org/en/iron/p/rclpy/rclpy.task.html
@@ -8,7 +10,8 @@ from rclpy.node import Node
 
 
 class PointLocationSender(Node):
-    def __init__(self):
+    """ROS 2 stamped point publisher."""
+    def __init__(self) -> None:
         super().__init__("send_point_location")  # Initializes ROS2 node with unique name
         self.publisher_ = self.create_publisher(
             PointStamped, "/my_point", 10
@@ -17,7 +20,8 @@ class PointLocationSender(Node):
             0.5, self.timer_callback
         )  # Calls timer_callback every 0.5 seconds (2 Hz)
 
-    def timer_callback(self):
+    def timer_callback(self) -> None:
+        """Publish the next message."""
         msg = PointStamped()  # creates a new ROS2 message of type PointStamped
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.header.frame_id = "odom"
@@ -30,7 +34,8 @@ class PointLocationSender(Node):
         )  # log to the console
 
 
-def main(args=None):
+def main(args: list[str] | None = None) -> None:
+    """Initialize ROS, run the node and shut down."""
     rclpy.init(args=args)  # Initializes the ROS2 Python client library
     node = PointLocationSender()  # Creates an instance of our custom node class
     rclpy.spin(node)  # Keeps the node running

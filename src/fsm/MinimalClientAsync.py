@@ -1,3 +1,5 @@
+"""ROS 2 asynchronous service client."""
+
 import sys
 
 import rclpy
@@ -6,21 +8,24 @@ from tutorial_interfaces.srv import AddThreeInts  # CHANGE
 
 
 class MinimalClientAsync(Node):
-    def __init__(self):
+    """ROS 2 asynchronous service client."""
+    def __init__(self) -> None:
         super().__init__("minimal_client_async")
         self.cli = self.create_client(AddThreeInts, "add_three_ints")  # CHANGE
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("service not available, waiting again...")
         self.req = AddThreeInts.Request()  # CHANGE
 
-    def send_request(self):
+    def send_request(self) -> None:
+        """Send an asynchronous addition request."""
         self.req.a = int(sys.argv[1])
         self.req.b = int(sys.argv[2])
         self.req.c = int(sys.argv[3])  # CHANGE
         self.future = self.cli.call_async(self.req)
 
 
-def main(args=None):
+def main(args: list[str] | None = None) -> None:
+    """Initialize ROS, run the node and shut down."""
     rclpy.init(args=args)
 
     minimal_client = MinimalClientAsync()
@@ -32,16 +37,11 @@ def main(args=None):
             try:
                 response = minimal_client.future.result()
             except Exception as e:
-                minimal_client.get_logger().info("Service call failed %r" % (e,))
+                minimal_client.get_logger().info(f"Service call failed {e!r}")
             else:
                 minimal_client.get_logger().info(
-                    "Result of add_three_ints: for %d + %d + %d = %d"  # CHANGE
-                    % (
-                        minimal_client.req.a,
-                        minimal_client.req.b,
-                        minimal_client.req.c,
-                        response.sum,
-                    )
+                    f"Result of add_three_ints: for {minimal_client.req.a} + "
+                    f"{minimal_client.req.b} + {minimal_client.req.c} = {response.sum}"
                 )  # CHANGE
             break
 

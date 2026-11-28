@@ -25,4 +25,5 @@ jobs:
         python -m pip install -e ".[dev]" pylint
     - name: Analysing the code with pylint
       run: |
-        git ls-files -z '*.py' | xargs -0 python -m pylint
+        # OpenCV exposes members through a native extension rather than Python source.
+        git ls-files -z '*.py' | xargs -0 python -m pylint --extension-pkg-allow-list=cv2
