@@ -67,15 +67,11 @@ class TestClassifyDetection:
 
 
 class TestClassifyDetections:
-    def test_returns_same_length(
-        self, sample_detections: list[Detection]
-    ) -> None:
+    def test_returns_same_length(self, sample_detections: list[Detection]) -> None:
         result = classify_detections(sample_detections)
         assert len(result) == len(sample_detections)
 
-    def test_pairs_are_detection_and_class(
-        self, sample_detections: list[Detection]
-    ) -> None:
+    def test_pairs_are_detection_and_class(self, sample_detections: list[Detection]) -> None:
         for det, cls in classify_detections(sample_detections):
             assert isinstance(det, Detection)
             assert isinstance(cls, ObjectClass)
@@ -85,16 +81,12 @@ class TestClassifyDetections:
 
 
 class TestFilterByClass:
-    def test_filters_to_persons(
-        self, sample_detections: list[Detection]
-    ) -> None:
+    def test_filters_to_persons(self, sample_detections: list[Detection]) -> None:
         persons = filter_by_class(sample_detections, ObjectClass.PERSON)
         assert len(persons) == 1
         assert persons[0].label == "person"
 
-    def test_unknown_class_returns_banana(
-        self, sample_detections: list[Detection]
-    ) -> None:
+    def test_unknown_class_returns_banana(self, sample_detections: list[Detection]) -> None:
         unknowns = filter_by_class(sample_detections, ObjectClass.UNKNOWN)
         assert len(unknowns) == 1
         assert unknowns[0].label == "banana"

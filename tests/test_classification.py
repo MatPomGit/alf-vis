@@ -45,9 +45,7 @@ class TestClassifyImage:
             classify_image("not an image")  # type: ignore[arg-type]
 
     @pytest.mark.parametrize("threshold", [-0.1, 1.1])
-    def test_raises_for_invalid_threshold(
-        self, bgr_image: np.ndarray, threshold: float
-    ) -> None:
+    def test_raises_for_invalid_threshold(self, bgr_image: np.ndarray, threshold: float) -> None:
         with pytest.raises(ValueError):
             classify_image(bgr_image, confidence_threshold=threshold)
 

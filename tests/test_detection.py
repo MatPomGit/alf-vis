@@ -60,9 +60,7 @@ class TestDetectObjects:
             detect_objects(gray)
 
     @pytest.mark.parametrize("threshold", [-0.1, 1.1, 2.0])
-    def test_raises_for_invalid_threshold(
-        self, bgr_image: np.ndarray, threshold: float
-    ) -> None:
+    def test_raises_for_invalid_threshold(self, bgr_image: np.ndarray, threshold: float) -> None:
         with pytest.raises(ValueError):
             detect_objects(bgr_image, confidence_threshold=threshold)
 

@@ -24,9 +24,7 @@ def bgr_image() -> np.ndarray:
 class TestMarkerDetection:
     def test_can_be_created(self) -> None:
         corners = np.array([[0, 0], [10, 0], [10, 10], [0, 10]], dtype=np.float32)
-        det = MarkerDetection(
-            marker_type=MarkerType.ARUCO, marker_id=3, corners=corners
-        )
+        det = MarkerDetection(marker_type=MarkerType.ARUCO, marker_id=3, corners=corners)
         assert det.marker_id == 3
         assert det.payload == ""
 
