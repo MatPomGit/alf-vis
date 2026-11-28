@@ -1,4 +1,6 @@
 from enum import Enum, auto
+
+
 class PerceptionState(Enum):
     IDLE = auto()
     CAPTURE_RGBD_FRAME = auto()

@@ -285,10 +285,12 @@ class RobotPerceptionStateMachine:
                 self.context.slam_pose = result.get("slam_pose")
                 self.context.slam_map_status = result.get("slam_map_status", "UNKNOWN")
                 self.transition_to(PerceptionState.BUILD_POINT_CLOUD)
-            
+
             elif self.state == PerceptionState.CHECK_PATH_DEVIATION:
                 result = self._run_module("check_path_deviation.py")
-                self.context.path_deviation_detected = bool(result.get("path_deviation_detected", False))
+                self.context.path_deviation_detected = bool(
+                    result.get("path_deviation_detected", False)
+                )
                 self.context.path_deviation_value = float(result.get("path_deviation_value", 0.0))
                 self.transition_to(PerceptionState.UPDATE_VISUAL_SLAM)
 
