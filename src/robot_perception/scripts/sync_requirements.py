@@ -90,7 +90,9 @@ def main() -> None:
     generated = generate_requirements_content()
 
     if args.check:
-        current = REQUIREMENTS_FILE.read_text(encoding="utf-8") if REQUIREMENTS_FILE.exists() else ""
+        current = (
+            REQUIREMENTS_FILE.read_text(encoding="utf-8") if REQUIREMENTS_FILE.exists() else ""
+        )
         if current != generated:
             raise SystemExit(
                 "Wykryto drift manifestów. Uruchom: "

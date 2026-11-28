@@ -242,16 +242,16 @@ def create_trajectory_line_set(
 
     Returns:
         Tuple ``(points, lines)`` where *points* has shape ``(N, 3)`` and
-        *lines* has shape ``(N-1, 2)`` as arrays of integer indices.
-        Returns empty arrays when the trajectory has fewer than 2 poses.
+        *lines* has shape ``(max(N-1, 0), 2)`` with integer indices.
+        A single pose retains its position but has no connecting lines.
     """
-    if len(trajectory) < 2:
+    if not trajectory:
         return np.empty((0, 3), dtype=np.float64), np.empty((0, 2), dtype=np.int64)
 
     # Extract camera positions (last column of each pose matrix).
     positions = np.array([T[:3, 3] for T in trajectory], dtype=np.float64)
     n = len(positions)
-    lines = np.array([[i, i + 1] for i in range(n - 1)], dtype=np.int64)
+    lines = np.array([[i, i + 1] for i in range(n - 1)], dtype=np.int64).reshape(-1, 2)
     return positions, lines
 
 

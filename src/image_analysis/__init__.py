@@ -6,6 +6,13 @@ Import specific functionality directly from submodules, e.g.
 `from image_analysis.detection import Detection`.
 """
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from image_analysis.array_backend import get_array_backend, is_pyscript_runtime, to_numpy
+    from image_analysis.kalman_tracking import KalmanMultiObjectTracker, TrackedObject
+    from image_analysis.pywebio_app import run_pywebio_app
+
 __all__ = [
     "KalmanMultiObjectTracker",
     "TrackedObject",
@@ -20,7 +27,7 @@ def __getattr__(name: str) -> object:
     if name in {"KalmanMultiObjectTracker", "TrackedObject"}:
         from image_analysis.kalman_tracking import KalmanMultiObjectTracker, TrackedObject
 
-        exports = {
+        exports: dict[str, object] = {
             "KalmanMultiObjectTracker": KalmanMultiObjectTracker,
             "TrackedObject": TrackedObject,
         }

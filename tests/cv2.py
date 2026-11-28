@@ -52,7 +52,9 @@ class FileStorage:
         self._data: dict[str, Any] = {}
         if mode == FILE_STORAGE_READ and self._path.exists():
             loaded = np.load(self._path, allow_pickle=True)
-            self._data = {k: loaded[k].item() if loaded[k].shape == () else loaded[k] for k in loaded.files}
+            self._data = {
+                k: loaded[k].item() if loaded[k].shape == () else loaded[k] for k in loaded.files
+            }
 
     def write(self, key: str, value: Any) -> None:
         self._data[key] = value
@@ -99,7 +101,9 @@ def imwrite(path: str, image: np.ndarray) -> bool:
     return True
 
 
-def resize(image: np.ndarray, dsize: tuple[int, int], interpolation: int = INTER_LINEAR) -> np.ndarray:
+def resize(
+    image: np.ndarray, dsize: tuple[int, int], interpolation: int = INTER_LINEAR
+) -> np.ndarray:
     width, height = dsize
     mode = Image.BILINEAR if interpolation == INTER_LINEAR else Image.BOX
     if image.ndim == 2:
@@ -114,8 +118,12 @@ def cvtColor(image: np.ndarray, code: int) -> np.ndarray:  # noqa: N802
         b, g, r = image[..., 0], image[..., 1], image[..., 2]
         return (0.114 * b + 0.587 * g + 0.299 * r).astype(np.uint8)
     if code == COLOR_BGR2YCrCb:
-        b, g, r = image[..., 0].astype(np.float32), image[..., 1].astype(np.float32), image[..., 2].astype(np.float32)
-        y = (0.114 * b + 0.587 * g + 0.299 * r)
+        b, g, r = (
+            image[..., 0].astype(np.float32),
+            image[..., 1].astype(np.float32),
+            image[..., 2].astype(np.float32),
+        )
+        y = 0.114 * b + 0.587 * g + 0.299 * r
         cr = 128 + 0.5 * (r - y)
         cb = 128 + 0.5 * (b - y)
         out = np.stack([y, cr, cb], axis=-1)
@@ -131,7 +139,7 @@ def GaussianBlur(image: np.ndarray, ksize: tuple[int, int], sigma_x: float) -> n
     out = np.zeros_like(image, dtype=np.float32)
     for y in range(image.shape[0]):
         for x in range(image.shape[1]):
-            patch = padded[y:y + ksize[0], x:x + ksize[1]]
+            patch = padded[y : y + ksize[0], x : x + ksize[1]]
             out[y, x] = float(np.sum(patch * k))
     return out.astype(image.dtype)
 
@@ -142,7 +150,7 @@ def Laplacian(image: np.ndarray, ddepth: Any) -> np.ndarray:  # noqa: N802
     out = np.zeros_like(image, dtype=np.float32)
     for y in range(image.shape[0]):
         for x in range(image.shape[1]):
-            out[y, x] = float(np.sum(padded[y:y + 3, x:x + 3] * kernel))
+            out[y, x] = float(np.sum(padded[y : y + 3, x : x + 3] * kernel))
     return out.astype(np.float64)
 
 
@@ -158,7 +166,14 @@ def putText(image: np.ndarray, *_: Any, **__: Any) -> np.ndarray:  # noqa: N802
     return image
 
 
-def arrowedLine(image: np.ndarray, pt1: tuple[int, int], pt2: tuple[int, int], color: tuple[int, int, int], thickness: int, tipLength: float = 0.1) -> np.ndarray:  # noqa: N803, N802
+def arrowedLine(
+    image: np.ndarray,
+    pt1: tuple[int, int],
+    pt2: tuple[int, int],
+    color: tuple[int, int, int],
+    thickness: int,
+    tipLength: float = 0.1,
+) -> np.ndarray:
     x1, y1 = pt1
     x2, y2 = pt2
     n = max(abs(x2 - x1), abs(y2 - y1), 1)
@@ -167,17 +182,24 @@ def arrowedLine(image: np.ndarray, pt1: tuple[int, int], pt2: tuple[int, int], c
         x = int(round(x1 + (x2 - x1) * t))
         y = int(round(y1 + (y2 - y1) * t))
         if 0 <= y < image.shape[0] and 0 <= x < image.shape[1]:
-            image[max(0, y - thickness + 1):y + thickness, max(0, x - thickness + 1):x + thickness] = color
+            image[
+                max(0, y - thickness + 1) : y + thickness,
+                max(0, x - thickness + 1) : x + thickness,
+            ] = color
     return image
 
 
-def imencode(ext: str, image: np.ndarray, params: list[int] | None = None) -> tuple[bool, np.ndarray]:
+def imencode(
+    ext: str, image: np.ndarray, params: list[int] | None = None
+) -> tuple[bool, np.ndarray]:
     quality = 80
     if params and len(params) >= 2 and params[0] == IMWRITE_JPEG_QUALITY:
         quality = int(params[1])
     arr = image[..., ::-1] if image.ndim == 3 and image.shape[2] == 3 else image
     buff = io.BytesIO()
-    Image.fromarray(arr).save(buff, format="JPEG" if ext.lower() == ".jpg" else "PNG", quality=quality)
+    Image.fromarray(arr).save(
+        buff, format="JPEG" if ext.lower() == ".jpg" else "PNG", quality=quality
+    )
     data = np.frombuffer(buff.getvalue(), dtype=np.uint8)
     return True, data
 
@@ -202,8 +224,16 @@ def cornerSubPix(image: np.ndarray, corners: np.ndarray, *_: Any) -> np.ndarray:
     return corners
 
 
-def calibrateCamera(obj_points: list[np.ndarray], img_points: list[np.ndarray], image_size: tuple[int, int], *_: Any) -> tuple[float, np.ndarray, np.ndarray, list[np.ndarray], list[np.ndarray]]:  # noqa: N802
-    k = np.array([[500.0, 0.0, image_size[0] / 2], [0.0, 500.0, image_size[1] / 2], [0.0, 0.0, 1.0]], dtype=np.float64)
+def calibrateCamera(
+    obj_points: list[np.ndarray],
+    img_points: list[np.ndarray],
+    image_size: tuple[int, int],
+    *_: Any,
+) -> tuple[float, np.ndarray, np.ndarray, list[np.ndarray], list[np.ndarray]]:
+    k = np.array(
+        [[500.0, 0.0, image_size[0] / 2], [0.0, 500.0, image_size[1] / 2], [0.0, 0.0, 1.0]],
+        dtype=np.float64,
+    )
     d = np.zeros((1, 5), dtype=np.float64)
     rvecs = [np.zeros((3, 1), dtype=np.float64) for _ in img_points]
     tvecs = [np.zeros((3, 1), dtype=np.float64) for _ in img_points]
@@ -226,7 +256,13 @@ def Rodrigues(src: np.ndarray) -> tuple[np.ndarray, np.ndarray]:  # noqa: N802
     return r, np.zeros((9, 3), dtype=np.float64)
 
 
-def solvePnP(object_points: np.ndarray, image_points: np.ndarray, camera_matrix: np.ndarray, dist_coeffs: np.ndarray, flags: int = SOLVEPNP_IPPE_SQUARE) -> tuple[bool, np.ndarray, np.ndarray]:  # noqa: N802
+def solvePnP(
+    object_points: np.ndarray,
+    image_points: np.ndarray,
+    camera_matrix: np.ndarray,
+    dist_coeffs: np.ndarray,
+    flags: int = SOLVEPNP_IPPE_SQUARE,
+) -> tuple[bool, np.ndarray, np.ndarray]:
     _ = object_points, dist_coeffs, flags
     mean_x = float(np.mean(image_points[:, 0]))
     mean_y = float(np.mean(image_points[:, 1]))
@@ -238,7 +274,13 @@ def solvePnP(object_points: np.ndarray, image_points: np.ndarray, camera_matrix:
     return True, rvec, tvec
 
 
-def projectPoints(object_points: np.ndarray, rvec: np.ndarray, tvec: np.ndarray, camera_matrix: np.ndarray, dist_coeffs: np.ndarray) -> tuple[np.ndarray, None]:  # noqa: N802
+def projectPoints(
+    object_points: np.ndarray,
+    rvec: np.ndarray,
+    tvec: np.ndarray,
+    camera_matrix: np.ndarray,
+    dist_coeffs: np.ndarray,
+) -> tuple[np.ndarray, None]:
     rot, _ = Rodrigues(rvec)
     pts = object_points.reshape(-1, 3).astype(np.float64)
     cam = (rot @ pts.T).T + np.asarray(tvec, dtype=np.float64).reshape(1, 3)

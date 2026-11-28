@@ -60,9 +60,7 @@ def test_uncertainty_map_can_shift_attention() -> None:
     uncertainty = np.zeros((240, 320), dtype=np.float32)
     uncertainty[120:200, 200:320] = 1.0
 
-    roi = optimizer.optimize_region(
-        (240, 320), detections=detections, uncertainty_map=uncertainty
-    )
+    roi = optimizer.optimize_region((240, 320), detections=detections, uncertainty_map=uncertainty)
 
     cx, _ = roi.center
     assert cx > 180

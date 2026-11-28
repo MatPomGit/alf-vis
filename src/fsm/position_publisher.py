@@ -1,20 +1,24 @@
 #!/usr/bin/env python3
 
+"""ROS 2 object position publisher."""
+
+
 import rclpy
-from rclpy.node import Node
 from geometry_msgs.msg import Point
+from rclpy.node import Node
 
 
 class PositionPublisher(Node):
-    def __init__(self):
-        super().__init__('position_publisher')
+    """ROS 2 object position publisher."""
+    def __init__(self) -> None:
+        super().__init__("position_publisher")
 
         # Parametr: okres publikacji [s]
-        self.declare_parameter('dt', 0.1)
-        dt = self.get_parameter('dt').value
+        self.declare_parameter("dt", 0.1)
+        dt = self.get_parameter("dt").value
 
         # Nowy topic ROS2
-        self.publisher_ = self.create_publisher(Point, '/object_position', 10)
+        self.publisher_ = self.create_publisher(Point, "/object_position", 10)
 
         # Timer wywoływany co dt sekund
         self.timer = self.create_timer(dt, self.timer_callback)
@@ -24,9 +28,9 @@ class PositionPublisher(Node):
         self.y = 0.0
         self.z = 0.0
 
-        self.get_logger().info(f'Start publikacji na /object_position co {dt:.3f} s')
+        self.get_logger().info(f"Start publikacji na /object_position co {dt:.3f} s")
 
-    def get_current_position(self):
+    def get_current_position(self) -> tuple[float, float, float]:
         """
         Tu podmień logikę pobierania aktualnej pozycji obiektu.
         Na razie: przykład, który zmienia pozycję w czasie.
@@ -36,7 +40,8 @@ class PositionPublisher(Node):
         self.z += 0.00
         return self.x, self.y, self.z
 
-    def timer_callback(self):
+    def timer_callback(self) -> None:
+        """Publish the next message."""
         x, y, z = self.get_current_position()
 
         msg = Point()
@@ -45,10 +50,11 @@ class PositionPublisher(Node):
         msg.z = z
 
         self.publisher_.publish(msg)
-        self.get_logger().info(f'Published: x={x:.3f}, y={y:.3f}, z={z:.3f}')
+        self.get_logger().info(f"Published: x={x:.3f}, y={y:.3f}, z={z:.3f}")
 
 
-def main(args=None):
+def main(args: list[str] | None = None) -> None:
+    """Initialize ROS, run the node and shut down."""
     rclpy.init(args=args)
     node = PositionPublisher()
     rclpy.spin(node)
@@ -56,5 +62,5 @@ def main(args=None):
     rclpy.shutdown()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

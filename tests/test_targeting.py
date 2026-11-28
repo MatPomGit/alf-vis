@@ -38,30 +38,22 @@ def offset_detection() -> Detection:
 
 
 class TestComputeCenterOffset:
-    def test_centered_detection_has_zero_offset(
-        self, centered_detection: Detection
-    ) -> None:
+    def test_centered_detection_has_zero_offset(self, centered_detection: Detection) -> None:
         offset = compute_center_offset(centered_detection, 300, 200)
         assert offset.dx_px == pytest.approx(0.0)
         assert offset.dy_px == pytest.approx(0.0)
         assert offset.distance_px == pytest.approx(0.0)
 
-    def test_normalised_offsets_are_in_range(
-        self, offset_detection: Detection
-    ) -> None:
+    def test_normalised_offsets_are_in_range(self, offset_detection: Detection) -> None:
         offset = compute_center_offset(offset_detection, 300, 200)
         assert -1.0 <= offset.dx_norm <= 1.0
         assert -1.0 <= offset.dy_norm <= 1.0
 
-    def test_dx_positive_for_right_offset(
-        self, offset_detection: Detection
-    ) -> None:
+    def test_dx_positive_for_right_offset(self, offset_detection: Detection) -> None:
         offset = compute_center_offset(offset_detection, 300, 200)
         assert offset.dx_px > 0
 
-    def test_dy_positive_for_below_offset(
-        self, offset_detection: Detection
-    ) -> None:
+    def test_dy_positive_for_below_offset(self, offset_detection: Detection) -> None:
         offset = compute_center_offset(offset_detection, 300, 200)
         assert offset.dy_px > 0
 
@@ -72,9 +64,7 @@ class TestComputeCenterOffset:
         with pytest.raises(ValueError):
             compute_center_offset(centered_detection, w, h)
 
-    def test_detection_stored_in_result(
-        self, centered_detection: Detection
-    ) -> None:
+    def test_detection_stored_in_result(self, centered_detection: Detection) -> None:
         offset = compute_center_offset(centered_detection, 300, 200)
         assert offset.detection is centered_detection
 
@@ -129,9 +119,7 @@ class TestDrawCrosshair:
 
 
 class TestDrawTargetLine:
-    def test_returns_copy(
-        self, bgr_image: np.ndarray, centered_detection: Detection
-    ) -> None:
+    def test_returns_copy(self, bgr_image: np.ndarray, centered_detection: Detection) -> None:
         offset = compute_center_offset(centered_detection, 300, 200)
         result = draw_target_line(bgr_image, offset)
         assert result is not bgr_image

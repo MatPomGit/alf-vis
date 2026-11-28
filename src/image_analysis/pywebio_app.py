@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import base64
 import io
-from typing import Any
+from typing import Any, cast
 
 import cv2
 import numpy as np
@@ -41,7 +41,7 @@ def decode_uploaded_image(payload: dict[str, Any]) -> np.ndarray:
 
     if image_rgb.ndim != 3 or image_rgb.shape[2] != 3:
         raise ValueError("Unable to decode uploaded image file.")
-    return image_rgb[:, :, ::-1].copy()
+    return cast(np.ndarray, image_rgb[:, :, ::-1].copy())
 
 
 def encode_png_bytes(image: np.ndarray) -> bytes:

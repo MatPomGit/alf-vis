@@ -9,10 +9,7 @@ import numpy as np
 
 
 MODULE_PATH = (
-    Path(__file__).resolve().parents[1]
-    / "experimental"
-    / "demo_yolo_utils"
-    / "camera_yolo.py"
+    Path(__file__).resolve().parents[1] / "experimental" / "demo_yolo_utils" / "camera_yolo.py"
 )
 
 

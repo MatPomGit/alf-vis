@@ -35,9 +35,7 @@ def square_marker() -> MarkerDetection:
     corners = np.array(
         [[150.0, 90.0], [190.0, 90.0], [190.0, 130.0], [150.0, 130.0]], dtype=np.float32
     )
-    return MarkerDetection(
-        marker_type=MarkerType.ARUCO, marker_id=0, corners=corners
-    )
+    return MarkerDetection(marker_type=MarkerType.ARUCO, marker_id=0, corners=corners)
 
 
 @pytest.fixture
@@ -108,33 +106,25 @@ class TestEstimatePosesFromMarkers:
         assert marker is square_marker
         assert isinstance(pose, Pose3D)
 
-    def test_empty_input_returns_empty(
-        self, calibration: CalibrationResult
-    ) -> None:
+    def test_empty_input_returns_empty(self, calibration: CalibrationResult) -> None:
         assert estimate_poses_from_markers([], calibration) == []
 
 
 class TestBackprojectTo3d:
-    def test_centre_pixel_at_known_depth(
-        self, calibration: CalibrationResult
-    ) -> None:
+    def test_centre_pixel_at_known_depth(self, calibration: CalibrationResult) -> None:
         # Principal point at (320, 240); pixel (320, 240) → (0, 0, Z).
         x, y, z = backproject_to_3d(320, 240, 2.0, calibration)
         assert x == pytest.approx(0.0, abs=1e-6)
         assert y == pytest.approx(0.0, abs=1e-6)
         assert z == pytest.approx(2.0)
 
-    def test_raises_for_non_positive_depth(
-        self, calibration: CalibrationResult
-    ) -> None:
+    def test_raises_for_non_positive_depth(self, calibration: CalibrationResult) -> None:
         with pytest.raises(ValueError):
             backproject_to_3d(100, 100, 0.0, calibration)
 
 
 class TestEstimatePoseFromDepth:
-    def test_returns_pose3d(
-        self, depth_map: np.ndarray, calibration: CalibrationResult
-    ) -> None:
+    def test_returns_pose3d(self, depth_map: np.ndarray, calibration: CalibrationResult) -> None:
         pose = estimate_pose_from_depth((100, 100, 200, 200), depth_map, calibration)
         assert isinstance(pose, Pose3D)
 
@@ -146,9 +136,7 @@ class TestEstimatePoseFromDepth:
         _, _, z = pose.position_m
         assert z == pytest.approx(1.5, rel=0.01)
 
-    def test_raises_for_empty_depth_roi(
-        self, calibration: CalibrationResult
-    ) -> None:
+    def test_raises_for_empty_depth_roi(self, calibration: CalibrationResult) -> None:
         # All-zero depth map → no valid pixels.
         depth = np.zeros((480, 640), dtype=np.float32)
         with pytest.raises(ValueError, match="No valid depth"):

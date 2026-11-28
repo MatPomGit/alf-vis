@@ -23,11 +23,11 @@ class TestValidateImage:
     @pytest.mark.parametrize(
         "image",
         [
-            np.zeros((100, 100), dtype=np.uint8),           # grayscale
-            np.zeros((100, 100, 1), dtype=np.uint8),         # single-channel
-            np.zeros((100, 100, 3), dtype=np.uint8),         # BGR
-            np.zeros((100, 100, 4), dtype=np.uint8),         # BGRA
-            np.zeros((100, 100, 3), dtype=np.float32),       # float BGR
+            np.zeros((100, 100), dtype=np.uint8),  # grayscale
+            np.zeros((100, 100, 1), dtype=np.uint8),  # single-channel
+            np.zeros((100, 100, 3), dtype=np.uint8),  # BGR
+            np.zeros((100, 100, 4), dtype=np.uint8),  # BGRA
+            np.zeros((100, 100, 3), dtype=np.float32),  # float BGR
         ],
     )
     def test_valid_images_do_not_raise(self, image: np.ndarray) -> None:

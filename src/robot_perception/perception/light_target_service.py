@@ -1,33 +1,62 @@
 from __future__ import annotations
 
-from typing import Optional, Sequence
+from collections.abc import Sequence
+from typing import Optional
 
 import cv2
 import numpy as np
+from common.models import ROI, LightTarget
 
-from common.models import LightTarget, ROI
 from perception.console import info
 
 
 class LightTargetService:
-    def __init__(self, threshold: int = 230, min_area_px: float = 40.0, hsv_lower: Sequence[int] | None = None, hsv_upper: Sequence[int] | None = None) -> None:
+    def __init__(
+        self,
+        threshold: int = 230,
+        min_area_px: float = 40.0,
+        hsv_lower: Sequence[int] | None = None,
+        hsv_upper: Sequence[int] | None = None,
+    ) -> None:
         self.threshold = int(np.clip(threshold, 0, 255))
         self.min_area_px = max(float(min_area_px), 1.0)
         self.hsv_lower, self.hsv_upper = self._normalize_hsv_bounds(hsv_lower, hsv_upper)
-        color_filter_status = f"hsv={self.hsv_lower.tolist()}..{self.hsv_upper.tolist()}" if self.hsv_lower is not None and self.hsv_upper is not None else "hsv=off"
-        info(f"Zainicjalizowano detekcję jasnej plamy (threshold={self.threshold}, min_area={self.min_area_px:.1f}px, {color_filter_status}).")
+        color_filter_status = (
+            f"hsv={self.hsv_lower.tolist()}..{self.hsv_upper.tolist()}"
+            if self.hsv_lower is not None and self.hsv_upper is not None
+            else "hsv=off"
+        )
+        info(
+            f"Zainicjalizowano detekcję jasnej plamy (threshold={self.threshold}, min_area={self.min_area_px:.1f}px, {color_filter_status})."
+        )
 
     @staticmethod
-    def _normalize_hsv_bounds(hsv_lower: Sequence[int] | None, hsv_upper: Sequence[int] | None) -> tuple[Optional[np.ndarray], Optional[np.ndarray]]:
+    def _normalize_hsv_bounds(
+        hsv_lower: Sequence[int] | None, hsv_upper: Sequence[int] | None
+    ) -> tuple[np.ndarray | None, Optional[np.ndarray]]:
         if hsv_lower is None or hsv_upper is None:
             return None, None
         if len(hsv_lower) != 3 or len(hsv_upper) != 3:
             return None, None
-        lower = np.array([np.clip(int(hsv_lower[0]), 0, 179), np.clip(int(hsv_lower[1]), 0, 255), np.clip(int(hsv_lower[2]), 0, 255)], dtype=np.uint8)
-        upper = np.array([np.clip(int(hsv_upper[0]), 0, 179), np.clip(int(hsv_upper[1]), 0, 255), np.clip(int(hsv_upper[2]), 0, 255)], dtype=np.uint8)
+        lower = np.array(
+            [
+                np.clip(int(hsv_lower[0]), 0, 179),
+                np.clip(int(hsv_lower[1]), 0, 255),
+                np.clip(int(hsv_lower[2]), 0, 255),
+            ],
+            dtype=np.uint8,
+        )
+        upper = np.array(
+            [
+                np.clip(int(hsv_upper[0]), 0, 179),
+                np.clip(int(hsv_upper[1]), 0, 255),
+                np.clip(int(hsv_upper[2]), 0, 255),
+            ],
+            dtype=np.uint8,
+        )
         return lower, upper
 
-    def detect(self, frame_bgr: np.ndarray, roi: ROI | None = None) -> Optional[LightTarget]:
+    def detect(self, frame_bgr: np.ndarray, roi: ROI | None = None) -> LightTarget | None:
         if frame_bgr is None or frame_bgr.size == 0:
             return None
         if roi is None:
@@ -61,5 +90,5 @@ class LightTargetService:
             axes_xy=(float(axis_w), float(axis_h)),
             angle_deg=float(angle),
             area_px=float(cv2.contourArea(best)),
-            contour_points=int(len(best)),
+            contour_points=len(best),
         )

@@ -5,7 +5,7 @@ import csv
 import math
 import time
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 from common.utils import ensure_dir, load_config
 from perception.state_machine import RobotPerceptionStateMachine
@@ -37,11 +37,11 @@ def parse_args() -> argparse.Namespace:
 
 
 def _track_motion_metrics(
-    prev_centroids: Dict[int, Tuple[float, float]],
-    current_centroids: Dict[int, Tuple[float, float]],
-) -> Dict[str, float]:
+    prev_centroids: dict[int, tuple[float, float]],
+    current_centroids: dict[int, Tuple[float, float]],
+) -> dict[str, float]:
     shared_ids = set(prev_centroids).intersection(current_centroids)
-    displacements: List[float] = []
+    displacements: list[float] = []
 
     for object_id in shared_ids:
         px, py = prev_centroids[object_id]
@@ -74,9 +74,9 @@ def main() -> None:
     )
     machine.print_snapshot = lambda: None  # type: ignore[assignment]
 
-    rows: List[Dict[str, float | int | str | bool]] = []
+    rows: list[dict[str, float | int | str | bool]] = []
     processed_frames = 0
-    prev_track_centroids: Dict[int, Tuple[float, float]] = {}
+    prev_track_centroids: dict[int, tuple[float, float]] = {}
 
     try:
         while True:
@@ -90,7 +90,7 @@ def main() -> None:
             }
             motion = _track_motion_metrics(prev_track_centroids, current_track_centroids)
 
-            row: Dict[str, float | int | str | bool] = {
+            row: dict[str, float | int | str | bool] = {
                 "wall_timestamp_sec": round(time.time(), 6),
                 "frame_id": snapshot.frame_id,
                 "frame_timestamp_sec": round(snapshot.timestamp_sec, 6),
@@ -126,9 +126,9 @@ def main() -> None:
     finally:
         machine.shutdown()
 
-    fieldnames: List[str] = []
+    fieldnames: list[str] = []
     for row in rows:
-        for key in row.keys():
+        for key in row:
             if key not in fieldnames:
                 fieldnames.append(key)
 

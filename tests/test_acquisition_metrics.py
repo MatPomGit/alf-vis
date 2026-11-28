@@ -139,22 +139,16 @@ class TestComputeDepthMetrics:
 
 
 class TestAssessFrame:
-    def test_blurry_flag_set_for_uniform_image(
-        self, blurry_image: np.ndarray
-    ) -> None:
+    def test_blurry_flag_set_for_uniform_image(self, blurry_image: np.ndarray) -> None:
         # A uniform image has Laplacian variance ≈ 0 → blurry.
         metrics = assess_frame(blurry_image)
         assert metrics.is_blurry
 
-    def test_underexposed_flag_for_dark_image(
-        self, dark_image: np.ndarray
-    ) -> None:
+    def test_underexposed_flag_for_dark_image(self, dark_image: np.ndarray) -> None:
         metrics = assess_frame(dark_image)
         assert metrics.is_underexposed
 
-    def test_overexposed_flag_for_bright_image(
-        self, bright_image: np.ndarray
-    ) -> None:
+    def test_overexposed_flag_for_bright_image(self, bright_image: np.ndarray) -> None:
         metrics = assess_frame(bright_image)
         assert metrics.is_overexposed
 

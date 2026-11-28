@@ -154,7 +154,7 @@ def calibrate_camera(
         all_corners,
         image_size,
         None,
-        None,  # type: ignore[call-overload]
+        None,
     )
 
     logger.info("Calibration complete: RMS reprojection error = %.4f px", rms)

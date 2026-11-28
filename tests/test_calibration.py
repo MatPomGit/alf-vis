@@ -63,9 +63,7 @@ class TestCalibratCamera:
 
 
 class TestSaveLoadCalibration:
-    def test_round_trip(
-        self, tmp_path: Path, dummy_calibration: CalibrationResult
-    ) -> None:
+    def test_round_trip(self, tmp_path: Path, dummy_calibration: CalibrationResult) -> None:
         path = tmp_path / "cal.yaml"
         save_calibration(dummy_calibration, path)
         assert path.exists()
@@ -96,17 +94,13 @@ class TestUndistortImage:
         result = undistort_image(bgr_image, dummy_calibration)
         assert result.shape == bgr_image.shape
 
-    def test_raises_for_non_ndarray(
-        self, dummy_calibration: CalibrationResult
-    ) -> None:
+    def test_raises_for_non_ndarray(self, dummy_calibration: CalibrationResult) -> None:
         with pytest.raises(TypeError):
             undistort_image("not an image", dummy_calibration)  # type: ignore[arg-type]
 
 
 class TestComputeReprojectionError:
-    def test_empty_result_returns_empty_list(
-        self, dummy_calibration: CalibrationResult
-    ) -> None:
+    def test_empty_result_returns_empty_list(self, dummy_calibration: CalibrationResult) -> None:
         errors = compute_reprojection_error(dummy_calibration)
         assert errors == []
 

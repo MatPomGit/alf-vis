@@ -4,14 +4,14 @@ import json
 import queue
 import threading
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import asdict, dataclass, field
 from enum import Enum, auto
 from typing import Any, Dict, List, Optional, Tuple
-
 
 # ============================================================
 # ENUM STANÓW
 # ============================================================
+
 
 class PerceptionState(Enum):
     IDLE = auto()
@@ -32,13 +32,14 @@ class PerceptionState(Enum):
 # STRUKTURY DANYCH
 # ============================================================
 
+
 @dataclass
 class TrackedObject:
     object_id: int
     label: str
-    bbox: Tuple[int, int, int, int]
-    position: Tuple[float, float]
-    velocity: Tuple[float, float] = (0.0, 0.0)
+    bbox: tuple[int, int, int, int]
+    position: tuple[float, float]
+    velocity: tuple[float, float] = (0.0, 0.0)
     confidence: float = 1.0
 
 
@@ -46,23 +47,23 @@ class TrackedObject:
 class PerceptionContext:
     frame_id: int = 0
     timestamp: float = 0.0
-    image: Optional[Any] = None
-    roi: Optional[Tuple[int, int, int, int]] = None
+    image: Any | None = None
+    roi: Tuple[int, int, int, int] | None = None
 
-    visual_markers: List[Dict[str, Any]] = field(default_factory=list)
+    visual_markers: list[dict[str, Any]] = field(default_factory=list)
     human_detected: bool = False
     obstacle_detected: bool = False
-    new_objects: List[Dict[str, Any]] = field(default_factory=list)
-    tracked_objects: List[TrackedObject] = field(default_factory=list)
+    new_objects: list[dict[str, Any]] = field(default_factory=list)
+    tracked_objects: list[TrackedObject] = field(default_factory=list)
 
     path_deviation_detected: bool = False
-    slam_pose: Optional[Dict[str, float]] = None
+    slam_pose: dict[str, float] | None = None
     slam_map_status: str = "UNKNOWN"
 
     system_ok: bool = True
-    error_message: Optional[str] = None
+    error_message: str | None = None
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         data = asdict(self)
         return data
 
@@ -73,19 +74,18 @@ class PerceptionContext:
 # OpenCV, YOLO, AprilTag/Aruco, Kalman, SLAM, itd.
 # ============================================================
 
+
 class ActiveVisionModule:
-    def find_relevant_roi(self, image: Any) -> Tuple[int, int, int, int]:
+    def find_relevant_roi(self, image: Any) -> tuple[int, int, int, int]:
         # TODO: rzeczywista implementacja active vision
         # np. saliency map, gaze policy, region proposal, task-guided ROI
         return (100, 100, 300, 300)
 
 
 class VisualMarkerDetector:
-    def detect(self, image: Any, roi: Optional[Tuple[int, int, int, int]]) -> List[Dict[str, Any]]:
+    def detect(self, image: Any, roi: tuple[int, int, int, int] | None) -> List[Dict[str, Any]]:
         # TODO: detekcja markerów ArUco / AprilTag / QR
-        return [
-            {"id": 1, "type": "aruco", "pose": {"x": 1.2, "y": 0.4, "z": 0.0}}
-        ]
+        return [{"id": 1, "type": "aruco", "pose": {"x": 1.2, "y": 0.4, "z": 0.0}}]
 
 
 class HumanDetector:
@@ -101,15 +101,13 @@ class ObstacleDetector:
 
 
 class NewObjectDetector:
-    def detect(self, image: Any, tracked_objects: List[TrackedObject]) -> List[Dict[str, Any]]:
+    def detect(self, image: Any, tracked_objects: list[TrackedObject]) -> list[Dict[str, Any]]:
         # TODO: detekcja nowych obiektów
-        return [
-            {"label": "box", "bbox": (220, 180, 80, 60), "confidence": 0.92}
-        ]
+        return [{"label": "box", "bbox": (220, 180, 80, 60), "confidence": 0.92}]
 
 
 class KalmanTracker:
-    def update(self, tracked_objects: List[TrackedObject], image: Any) -> List[TrackedObject]:
+    def update(self, tracked_objects: list[TrackedObject], image: Any) -> list[TrackedObject]:
         # TODO: rzeczywisty update filtru Kalmana dla śledzonych obiektów
         updated = []
         for obj in tracked_objects:
@@ -129,7 +127,7 @@ class KalmanTracker:
 
 
 class PathDeviationChecker:
-    def check(self, slam_pose: Optional[Dict[str, float]]) -> bool:
+    def check(self, slam_pose: dict[str, float] | None) -> bool:
         # TODO: porównanie pozycji robota z trajektorią referencyjną
         if slam_pose is None:
             return False
@@ -137,7 +135,9 @@ class PathDeviationChecker:
 
 
 class SlamModule:
-    def update(self, image: Any, visual_markers: List[Dict[str, Any]]) -> Tuple[Dict[str, float], str]:
+    def update(
+        self, image: Any, visual_markers: list[Dict[str, Any]]
+    ) -> tuple[Dict[str, float], str]:
         # TODO: aktualizacja SLAM
         pose = {"x": 2.4, "y": 0.1, "theta": 0.03}
         status = "UPDATED"
@@ -149,17 +149,18 @@ class SlamModule:
 # To jest bezpieczny szkielet. W miejscu TODO podpinasz rclpy.
 # ============================================================
 
+
 class ROS2PublisherThread(threading.Thread):
     def __init__(self) -> None:
         super().__init__(daemon=True)
-        self._queue: queue.Queue[Dict[str, Any]] = queue.Queue()
+        self._queue: queue.Queue[dict[str, Any]] = queue.Queue()
         self._stop_event = threading.Event()
 
         # TODO: zainicjalizować rclpy, node, publisher
         # np. publisher na topic /perception_state
         self.ros2_enabled = False
 
-    def publish_async(self, state: Dict[str, Any]) -> None:
+    def publish_async(self, state: dict[str, Any]) -> None:
         self._queue.put(state)
 
     def run(self) -> None:
@@ -175,7 +176,9 @@ class ROS2PublisherThread(threading.Thread):
                 pass
             else:
                 # tryb symulacyjny
-                print("[ROS2 THREAD] Symulowana publikacja:", json.dumps(payload, ensure_ascii=False))
+                print(
+                    "[ROS2 THREAD] Symulowana publikacja:", json.dumps(payload, ensure_ascii=False)
+                )
 
     def stop(self) -> None:
         self._stop_event.set()
@@ -184,6 +187,7 @@ class ROS2PublisherThread(threading.Thread):
 # ============================================================
 # GŁÓWNA MASZYNA STANÓW
 # ============================================================
+
 
 class RobotPerceptionStateMachine:
     def __init__(self) -> None:
@@ -227,8 +231,7 @@ class RobotPerceptionStateMachine:
 
             elif self.state == PerceptionState.DETECT_VISUAL_MARKERS:
                 self.context.visual_markers = self.marker_detector.detect(
-                    self.context.image,
-                    self.context.roi
+                    self.context.image, self.context.roi
                 )
                 self.transition_to(PerceptionState.DETECT_HUMAN)
 
@@ -242,8 +245,7 @@ class RobotPerceptionStateMachine:
 
             elif self.state == PerceptionState.DETECT_NEW_OBJECTS:
                 detected_new = self.new_object_detector.detect(
-                    self.context.image,
-                    self.context.tracked_objects
+                    self.context.image, self.context.tracked_objects
                 )
                 self.context.new_objects = detected_new
 
@@ -263,13 +265,14 @@ class RobotPerceptionStateMachine:
 
             elif self.state == PerceptionState.TRACK_OBJECTS_KALMAN:
                 self.context.tracked_objects = self.kalman_tracker.update(
-                    self.context.tracked_objects,
-                    self.context.image
+                    self.context.tracked_objects, self.context.image
                 )
                 self.transition_to(PerceptionState.CHECK_PATH_DEVIATION)
 
             elif self.state == PerceptionState.CHECK_PATH_DEVIATION:
-                self.context.path_deviation_detected = self.path_checker.check(self.context.slam_pose)
+                self.context.path_deviation_detected = self.path_checker.check(
+                    self.context.slam_pose
+                )
                 self.transition_to(PerceptionState.UPDATE_SLAM)
 
             elif self.state == PerceptionState.UPDATE_SLAM:
@@ -341,6 +344,7 @@ class RobotPerceptionStateMachine:
 # ============================================================
 # PRZYKŁAD UŻYCIA
 # ============================================================
+
 
 def main() -> None:
     sm = RobotPerceptionStateMachine()
